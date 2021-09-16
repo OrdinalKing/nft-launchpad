@@ -440,7 +440,172 @@ impl BidState {
         Ok(())
     }
 
-    
+    /// Push a new bid into the state, this succeeds only if the bid is larger than the current top
+    /// winner stored. Crappy list information to start with.
+    pub fn place_bid(
+        &mut self,
+        bid: Bid,
+        tick_size: Option<u64>,
+        gap_tick_size_percentage: Option<u8>,
+        minimum: u64,
+    ) -> Result<(), ProgramError> {
+        msg!("Placing bid {:?}", &bid.1.to_string());
+        BidState::assert_valid_tick_size_bid(&bid, tick_size)?;
+        if bid.1 < minimum {
+            return Err(AuctionError::BidTooSmall.into());
+        }
+
+        match self {
+            // In a capped auction, track the limited number of winners.
+            BidState::EnglishAuction { ref mut bids, max } => {
+                match bids.last() {
+                    Some(top) => {
+                        msg!("Looking to go over the loop, but check tick size first");
+
+                        for i in (0..bids.len()).rev() {
+                            msg!("Comparison of {:?} and {:?} for {:?}", bids[i].1, bid.1, i);
+                            if bids[i].1 < bid.1 {
+                                if let Some(gap_tick) = gap_tick_size_percentage {
+                                    BidState::assert_valid_gap_insertion(gap_tick, &bids[i], &bid)?
+                                }
+
+                                msg!("Ok we can do an insert");
+                                if i + 1 < bids.len() {
+                                    msg!("Doing a normal insert");
+                                    bids.insert(i + 1, bid);
+                                } else {
+                                    msg!("Doing an on the end insert");
+                                    bids.push(bid)
+                                }
+                                break;
+                            } else if bids[i].1 == bid.1 {
+                                if let Some(gap_tick) = gap_tick_size_percentage {
+                                    if gap_tick > 0 {
+                                        msg!("Rejecting same-bid insert due to gap tick size of {:?}", gap_tick);
+                                        return Err(AuctionError::GapBetweenBidsTooSmall.into());
+                                    }
+                                }
+
+                                msg!("Ok we can do an equivalent insert");
+                                if i == 0 {
+                                    msg!("Doing a normal insert");
+                                    bids.insert(0, bid);
+                                    break;
+                                } else {
+                                    if bids[i - 1].1 != bids[i].1 {
+                                        msg!("Doing an insert just before");
+                                        bids.insert(i, bid);
+                                        break;
+                                    }
+                                    msg!("More duplicates ahead...")
+                                }
+                            } else if i == 0 {
+                                msg!("Inserting at 0");
+                                bids.insert(0, bid);
+                                break;
+                            }
+                        }
+                        let max_size = BidState::max_array_size_for(*max);
+
+                        if bids.len() > max_size {
+                            bids.remove(0);
+                        }
+                        Ok(())
+                    }
+                    _ => {
+                        msg!("Pushing bid onto stack");
+                        bids.push(bid);
+                        Ok(())
+                    }
+                }
+            }
+
+            // In an open auction, bidding simply succeeds.
+            BidState::OpenEdition { bids, max } => Ok(()),
+        }
+    }
+
+    /// Cancels a bid, if the bid was a winning bid it is removed, if the bid is invalid the
+    /// function simple no-ops.
+    pub fn cancel_bid(&mut self, key: Pubkey) -> Result<(), ProgramError> {
+        match self {
+            BidState::EnglishAuction { ref mut bids, max } => {
+                bids.retain(|b| b.0 != key);
+                Ok(())
+            }
+
+            // In an open auction, cancelling simply succeeds. It's up to the manager of an auction
+            // to decide what to do with open edition bids.
+            BidState::OpenEdition { bids, max } => Ok(()),
+        }
+    }
+
+    pub fn amount(&self, index: usize) -> u64 {
+        match self {
+            BidState::EnglishAuction { bids, max } => {
+                if index >= 0 as usize && index < bids.len() {
+                    return bids[bids.len() - index - 1].1;
+                } else {
+                    return 0;
+                }
+            }
+            BidState::OpenEdition { bids, max } => 0,
+        }
+    }
+
+    /// Check if a pubkey is currently a winner and return winner #1 as index 0 to outside world.
+    pub fn is_winner(&self, key: &Pubkey, min: u64) -> Option<usize> {
+        // NOTE if changing this, change in auction.ts on front end as well where logic duplicates.
+
+        match self {
+            // Presense in the winner list is enough to check win state.
+            BidState::EnglishAuction { bids, max } => {
+                match bids.iter().position(|bid| &bid.0 == key && bid.1 >= min) {
+                    Some(val) => {
+                        let zero_based_index = bids.len() - val - 1;
+                        if zero_based_index < *max {
+                            Some(zero_based_index)
+                        } else {
+                            None
+                        }
+                    }
+                    None => None,
+                }
+            }
+            // There are no winners in an open edition, it is up to the auction manager to decide
+            // what to do with open edition bids.
+            BidState::OpenEdition { bids, max } => None,
+        }
+    }
+
+    pub fn num_winners(&self) -> u64 {
+        match self {
+            BidState::EnglishAuction { bids, max } => cmp::min(bids.len(), *max) as u64,
+            BidState::OpenEdition { bids, max } => 0,
+        }
+    }
+
+    pub fn num_possible_winners(&self) -> u64 {
+        match self {
+            BidState::EnglishAuction { bids, max } => *max as u64,
+            BidState::OpenEdition { bids, max } => 0,
+        }
+    }
+
+    /// Idea is to present #1 winner as index 0 to outside world with this method
+    pub fn winner_at(&self, index: usize) -> Option<Pubkey> {
+        match self {
+            BidState::EnglishAuction { bids, max } => {
+                if index < *max && index < bids.len() {
+                    let bid = &bids[bids.len() - index - 1];
+                    Some(bids[bids.len() - index - 1].0)
+                } else {
+                    None
+                }
+            }
+            BidState::OpenEdition { bids, max } => None,
+        }
+    }
 }
 
 #[repr(C)]
