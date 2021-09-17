@@ -36,6 +36,10 @@
     "react-masonry-css": "^1.0.16",
     "react-router-dom": "^5.2.0",
     "react-virtualized": "^9.22.3",
+    "react-icons": "^4.2.0",
+    "react-spring": "^9.2.4",
+    "react-spring-3d-carousel": "^1.2.1",
+    "uuid": "^8.3.2",
     "three": "^0.128.0"
   },
   "scripts": {

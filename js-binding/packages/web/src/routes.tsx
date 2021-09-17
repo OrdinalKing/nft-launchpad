@@ -10,6 +10,7 @@ import {
   AuctionCreateView,
   AuctionView,
   HomeView,
+  JoinRaffleView,
 } from './views';
 import { AdminView } from './views/admin';
 import { BillingView } from './views/auction/billing';
@@ -21,6 +22,7 @@ export function Routes() {
         <Providers>
           <Switch>
             <Route exact path="/admin" component={() => <AdminView />} />
+            <Route exact path="/join-raffle" component={() => <JoinRaffleView />} />
             <Route
               exact
               path="/analytics"
