@@ -67,27 +67,22 @@ pub const BID_LENGTH: usize = 32 + 8;
 pub struct LotteryData {
     /// Pubkey of the authority with permission to modify this lottery.
     pub authority: Pubkey,
-    /// Pubkey of the resource being bid on.
-    /// TODO try to bring this back some day. Had to remove this due to a stack access violation bug
-    /// interactin that happens in metaplex during redemptions due to some low level rust error
-    /// that happens when LotteryData has too many fields. This field was the least used.
-    ///pub resource: Pubkey,
     /// Token mint for the SPL token being used to bid
     pub token_mint: Pubkey,
-    /// The time the last bid was placed, used to keep track of lottery timing.
-    pub last_bid: Option<UnixTimestamp>,
+    /// Token account to store all bids
+    pub token_pool: Pubkey,
     /// Slot time the lottery was officially ended by.
-    pub ended_at: Option<UnixTimestamp>,
+    pub ended_at: u64,
     /// End time is the cut-off point that the lottery is forced to end by.
-    pub end_lottery_at: Option<UnixTimestamp>,
-    /// Gap time is the amount of time in slots after the previous bid at which the lottery ends.
-    pub end_lottery_gap: Option<UnixTimestamp>,
-    /// Minimum price for any bid to meet.
-    pub price_floor: PriceFloor,
+    pub end_lottery_at: u64,
     /// The state the lottery is in, whether it has started or ended.
     pub state: LotteryState,
-    /// Lottery Bids, each user may have one bid open at a time.
+    /// Lottery Bids, each user may have many bids open at a time.
     pub bid_state: BidState,
+    /// total NFT amount for this lottery
+    pub nft_amount: u64,
+    /// ticket amount for this lottery
+    pub ticket_amount: u64,
 }
 
 pub const MAX_AUCTION_DATA_EXTENDED_SIZE: usize = 8 + 9 + 2 + 200;
