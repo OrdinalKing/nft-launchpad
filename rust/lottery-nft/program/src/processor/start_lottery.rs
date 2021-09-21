@@ -1,6 +1,6 @@
 use crate::{
     errors::LotteryError,
-    processor::{LotteryData, LotteryState, Bid, BidState, WinnerLimit},
+    processor::{LotteryData, LotteryState, Ticket, TicketState},
     utils::{assert_derivation, assert_owned_by, assert_signer, create_or_allocate_account_raw},
     PREFIX,
 };
@@ -52,10 +52,39 @@ pub fn start_lottery<'a, 'b: 'a>(
     accounts: &'a [AccountInfo<'b>],
     args: StartLotteryArgs,
 ) -> ProgramResult {
-    msg!("+ Processing StartLottery");
+    msg!("+ Starting Lottery");
     let accounts = parse_accounts(program_id, accounts)?;
     let clock = Clock::from_account_info(accounts.clock_sysvar)?;
 
-    
+    // Initialise a new lottery. The end time is calculated relative to now.
+    let mut lottery = LotteryData::from_account_info(accounts.lottery)?;
+
+    // Derive lottery address so we can make the modifications necessary to start it.
+    assert_derivation(
+        program_id,
+        accounts.lottery,
+        &[
+            PREFIX.as_bytes(),
+            program_id.as_ref(),
+            lottery.lottery_store_id.as_ref(),
+        ],
+    )?;
+
+    // Check authority is correct.
+    if lottery.authority != *accounts.authority.key {
+        return Err(LotteryError::InvalidAuthority.into());
+    }
+
+    let cur_timestamp = clock.unix_timestamp as u64;
+    if cur_timestamp > lottery.end_lottery_at {
+        return Err(LotteryError::AlreadyOverEndDate.into());
+    }
+
+    LotteryData {
+        state: lottery.state.start()?,
+        ..lottery
+    }
+    .serialize(&mut *accounts.lottery.data.borrow_mut())?;
+
     Ok(())
 }

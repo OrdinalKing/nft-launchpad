@@ -3,7 +3,7 @@
 
 use crate::{
     errors::LotteryError,
-    processor::{LotteryData, BidderMetadata, BidderPot},
+    processor::{LotteryData},
     utils::{
         assert_derivation, assert_initialized, assert_owned_by, assert_signer,
         assert_token_program_matches_package, create_or_allocate_account_raw, spl_token_transfer,
@@ -27,12 +27,6 @@ use {
     },
     spl_token::state::Account,
 };
-
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq)]
-pub struct ClaimBidArgs {
-    pub resource: Pubkey,
-}
 
 struct Accounts<'a, 'b: 'a> {
     destination: &'a AccountInfo<'b>,
@@ -78,12 +72,11 @@ fn parse_accounts<'a, 'b: 'a>(
     Ok(accounts)
 }
 
-pub fn claim_nft(
+pub fn claim(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    args: ClaimBidArgs,
 ) -> ProgramResult {
-    msg!("+ Processing ClaimNFT");
+    msg!("+ Processing Claim");
     let accounts = parse_accounts(program_id, accounts)?;
     let clock = Clock::from_account_info(accounts.clock_sysvar)?;
     
