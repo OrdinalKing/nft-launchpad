@@ -165,7 +165,7 @@ pub fn claim_bid(
     }
 
     // Transfer SPL bid balance back to the user.
-    spl_token_transfer(TokenTransferParams {
+    spl_token_transfer(TokenTransferParams { 
         source: accounts.bidder_pot_token.clone(),
         destination: accounts.destination.clone(),
         authority: accounts.auction.clone(),

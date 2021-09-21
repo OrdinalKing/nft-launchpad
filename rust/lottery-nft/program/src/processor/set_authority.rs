@@ -2,7 +2,7 @@
 
 use crate::{
     errors::LotteryError,
-    processor::{LotteryData, BASE_AUCTION_DATA_SIZE},
+    processor::{LotteryData, BASE_LOTTERY_DATA_SIZE},
     utils::assert_owned_by,
     PREFIX,
 };

@@ -167,7 +167,7 @@ pub fn spl_token_transfer(params: TokenTransferParams<'_, '_>) -> ProgramResult 
 }
 
 /// TokenMintToParams
-pub struct TokenCreateAccount<'a> {
+pub struct TokenCreateAccount<'a: 'b, 'b> {
     /// payer
     pub payer: AccountInfo<'a>,
     /// mint
@@ -177,7 +177,7 @@ pub struct TokenCreateAccount<'a> {
     /// authority
     pub authority: AccountInfo<'a>,
     /// authority seeds
-    pub authority_seeds: &'a [&'a [u8]],
+    pub authority_seeds: &'b [&'b [u8]],
     /// token_program
     pub token_program: AccountInfo<'a>,
     /// rent information
@@ -186,7 +186,7 @@ pub struct TokenCreateAccount<'a> {
 
 /// Create a new SPL token account.
 #[inline(always)]
-pub fn spl_token_create_account(params: TokenCreateAccount<'_>) -> ProgramResult {
+pub fn spl_token_create_account(params: TokenCreateAccount<'_,'_>) -> ProgramResult {
     let TokenCreateAccount {
         payer,
         mint,

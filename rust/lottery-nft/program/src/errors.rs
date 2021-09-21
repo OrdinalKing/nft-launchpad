@@ -43,6 +43,10 @@ pub enum LotteryError {
     #[error("Invalid lottery state transition.")]
     LotteryTransitionInvalid,
 
+    /// Invalid transition, ticket state may only transition: Bought -> Winned/NotWinned ->Claimed
+    #[error("Invalid ticket state transition.")]
+    TicketTransitionInvalid,
+
     /// Failed to derive an account from seeds.
     #[error("Failed to derive an account from seeds.")]
     DerivedKeyInvalid,
@@ -134,6 +138,14 @@ pub enum LotteryError {
     /// Gap tick size percentage must be between 0 and 100
     #[error("Gap tick size percentage must be between 0 and 100")]
     InvalidGapTickSizePercentage,
+
+    /// Already ended
+    #[error("Already over end time")]
+    AlreadyOverEndDate,
+
+    /// Exceed available ticket amount
+    #[error("Exceed available ticket amount")]
+    ExceedTiketAmount,
 }
 
 impl PrintProgramError for LotteryError {
