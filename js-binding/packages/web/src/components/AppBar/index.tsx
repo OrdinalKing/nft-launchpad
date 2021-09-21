@@ -52,7 +52,7 @@ const DefaultActions = ({ vertical = false }: { vertical?: boolean }) => {
         flexDirection: vertical ? 'column' : 'row',
       }}
     >
-      <Link to={`/`}>
+      {/* <Link to={`/`}>
         <Button className="app-btn">Explore</Button>
       </Link>
       <Link to={`/artworks`}>
@@ -62,6 +62,15 @@ const DefaultActions = ({ vertical = false }: { vertical?: boolean }) => {
       </Link>
       <Link to={`/artists`}>
         <Button className="app-btn">Creators</Button>
+      </Link> */}
+      <Link to={`/create-lottery-store`}>
+        <Button className="app-btn">Create Lottery Store</Button>
+      </Link>
+      <Link to={`/create-lottery`}>
+        <Button className="app-btn">Create Lottery NFT</Button>
+      </Link>
+      <Link to={`/join-raffle`}>
+        <Button className="app-btn">Join Raffle</Button>
       </Link>
     </div>
   );

@@ -30,7 +30,6 @@ const getDeadTime = () => {
   }, []);
 
   const startTimer = (e) => {
-    console.log(second);
     getTimeRemaining(e);
     
   }
@@ -51,21 +50,21 @@ const getDeadTime = () => {
   return (
     <div className={styles.timer}>
       <div className={styles.timerBoxContainer}>
-        <p className={styles.timerBox}>{hour}</p>
+        <p className={styles.timerBox}>{hour >= 10 ? hour : '0' + hour}</p>
         <span className={styles.text}>hours</span>
       </div>
       <div className={styles.timerColon}>
         <p>:</p>
       </div>
       <div className={styles.timerBoxContainer}>
-        <p className={styles.timerBox}>{minute}</p>
+        <p className={styles.timerBox}>{minute >= 10 ? minute : '0' + minute}</p>
         <span className={styles.text}>mins</span>
       </div>
       <div className={styles.timerColon}>
         <p>:</p>
       </div>
       <div className={styles.timerBoxContainer}>
-        <p className={styles.timerBox}>{second}</p>
+        <p className={styles.timerBox}>{second >= 10 ? second : '0' + second}</p>
         <span className={styles.text}>sec</span>
       </div>
     </div>

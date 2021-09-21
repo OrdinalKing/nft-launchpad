@@ -7,8 +7,10 @@ const ArtCard = ({ img }) => {
       <div className={styles.card}>
         <div
           className={styles.cardImageContainer}
-          style={{ backgroundImage: `url(${img})` }}
-        ></div>
+          // style={{ backgroundImage: `url(${img})` }}
+        >
+          <img src={img.src} style={{width: '100' + '%', objectFit: 'contain'}} />
+          </div>
         <div className={styles.contentContaier}>
           <h3>Lorem ipsum dolor</h3>
           <p>

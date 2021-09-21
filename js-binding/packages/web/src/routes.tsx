@@ -14,6 +14,8 @@ import {
 } from './views';
 import { AdminView } from './views/admin';
 import { BillingView } from './views/auction/billing';
+import { CreateLotteryStoreView } from './views/lotteryStore';
+import { CreateLotteryNFTView } from './views/lotteryNFT';
 
 export function Routes() {
   return (
@@ -23,6 +25,8 @@ export function Routes() {
           <Switch>
             <Route exact path="/admin" component={() => <AdminView />} />
             <Route exact path="/join-raffle" component={() => <JoinRaffleView />} />
+            <Route exact path="/create-lottery-store" component={() => <CreateLotteryStoreView />} />
+            <Route exact path="/create-lottery" component={() => <CreateLotteryNFTView />} />
             <Route
               exact
               path="/analytics"
