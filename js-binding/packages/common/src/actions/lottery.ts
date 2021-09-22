@@ -230,6 +230,7 @@ export async function createLottery(
   lotteryStoreId: StringPublicKey,
   tokenMint: StringPublicKey,
   authority: StringPublicKey,
+  tokenPoolKey: StringPublicKey,
   instructions: TransactionInstruction[],
 ) {
   const lotteryProgramId = programIds().lottery;
@@ -245,16 +246,6 @@ export async function createLottery(
         toPublicKey(lotteryStoreId).toBuffer(),
       ],
       toPublicKey(lotteryProgramId),
-    )
-  )[0];
-  const tokenPoolKey: StringPublicKey = (
-    await findProgramAddress(
-      [
-        Buffer.from(LOTTERY_PREFIX),
-        toPublicKey(tokenProgramId).toBuffer(),
-        toPublicKey(lotteryKey).toBuffer(),
-      ],
-      toPublicKey(tokenProgramId),
     )
   )[0];
   console.log('creator', creator);

@@ -108,27 +108,12 @@ pub fn create_lottery(
         ],
     )?;
     msg!("+ 3");
-    let token_pool_seeds = [
-        PREFIX.as_bytes(),
-        (*accounts.token_program.key).as_ref(),
-        &(*accounts.lottery.key).to_bytes(),
-    ];
-    let (token_pool_key, token_pool_bump) = Pubkey::find_program_address(&token_pool_seeds, accounts.token_program.key);
-    
-    if token_pool_key != *accounts.token_pool.key {
-        return Err(LotteryError::InvalidTokenPool.into());
-    }
     spl_token_create_account(TokenCreateAccount{
         payer:accounts.payer.clone(),
         mint:accounts.token_mint.clone(),
         account:accounts.token_pool.clone(),
         authority:accounts.lottery.clone(),
-        authority_seeds:&[
-            PREFIX.as_bytes(),
-            (*accounts.token_program.key).as_ref(),
-            &(*accounts.lottery.key).to_bytes(),
-            &[token_pool_bump],
-        ],
+        authority_seeds:&lottery_seeds,
         token_program:accounts.token_program.clone(),
         rent:accounts.rent.clone()
     })?;

@@ -39,7 +39,10 @@ export async function makeLottery(
       toPublicKey(PROGRAM_IDS.lottery),
     )
   )[0];
+  const tokenPoolAccount = new Keypair();
   const signers: Keypair[] = [];
+  signers.push(tokenPoolAccount);
+
   const instructions: TransactionInstruction[] = [];
 
   const fullSettings = new CreateLotteryArgs({
@@ -52,6 +55,7 @@ export async function makeLottery(
     lotteryStore,
     tokenMint,
     lotteryKey,
+    tokenPoolAccount.publicKey.toBase58(),
     instructions,
   );
   const { txid, slot } = await sendTransactionWithRetry(

@@ -33,7 +33,7 @@ export const CreateLotteryNFTView = () => {
   const [mintAddress, setMintAddress] = useState(QUOTE_MINT.toBase58());
   const [enddate, setEndDate] = useState(moment().unix()+7 * 24 * 3600);
   const [ticketPrice, setTicketPrice] = useState(1);
-  const [ticketAmount, setTicketAmount] = useState(300);
+  const [ticketAmount, setTicketAmount] = useState(10);
   const [nftAmount, setNftAmount] = useState(100);
 
 
