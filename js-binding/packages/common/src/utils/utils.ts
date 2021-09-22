@@ -1,8 +1,20 @@
 import { useCallback, useState } from 'react';
-import { MintInfo } from '@solana/spl-token';
+import {
+  AccountLayout,
+  MintInfo,
+  MintLayout,
+  Token,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 
 import { TokenAccount } from './../models';
-import { PublicKey } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import BN from 'bn.js';
 import { WAD, ZERO } from '../constants';
 import { TokenInfo } from '@solana/spl-token-registry';
@@ -294,4 +306,54 @@ export function convert(
 
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+export function createSplKeypair(
+  instructions: TransactionInstruction[],
+  payer: PublicKey,
+  accountRentExempt: number,
+  mint: PublicKey,
+  owner: PublicKey,
+  space: number,
+) {
+  const keypair = new Keypair();
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: payer,
+      newAccountPubkey: keypair.publicKey,
+      lamports: accountRentExempt,
+      space,
+      programId: TOKEN_PROGRAM_ID,
+    }),
+  );
+
+  instructions.push(
+    Token.createInitAccountInstruction(
+      TOKEN_PROGRAM_ID,
+      mint,
+      keypair.publicKey,
+      owner,
+    ),
+  );
+
+  return keypair;
+}
+export async function createSPLTokenKeypair(
+  instructions: TransactionInstruction[],
+  connection: Connection,
+  payer: PublicKey,
+  owner: PublicKey,
+  mint: PublicKey,
+) {
+  const accountRentExempt = await connection.getMinimumBalanceForRentExemption(
+    MintLayout.span,
+  );
+  const newTokenKeypair = createSplKeypair(
+    instructions,
+    payer,
+    accountRentExempt,
+    mint,
+    owner,
+    AccountLayout.span,
+  );
+  return newTokenKeypair;
 }

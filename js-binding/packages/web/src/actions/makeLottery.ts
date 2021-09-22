@@ -9,6 +9,7 @@ import {
   toPublicKey,
   utils,
   findProgramAddress,
+  createSPLTokenKeypair,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
 
@@ -39,11 +40,17 @@ export async function makeLottery(
       toPublicKey(PROGRAM_IDS.lottery),
     )
   )[0];
-  const tokenPoolAccount = new Keypair();
+  const instructions: TransactionInstruction[] = [];
+
+  const tokenPoolAccount = await createSPLTokenKeypair(
+    instructions,
+    connection,
+    wallet.publicKey,
+    toPublicKey(lotteryKey),
+    toPublicKey(tokenMint),
+  );
   const signers: Keypair[] = [];
   signers.push(tokenPoolAccount);
-
-  const instructions: TransactionInstruction[] = [];
 
   const fullSettings = new CreateLotteryArgs({
     ...LotterySettings,

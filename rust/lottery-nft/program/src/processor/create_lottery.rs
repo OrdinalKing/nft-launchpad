@@ -87,7 +87,6 @@ pub fn create_lottery(
     if lottery_key != *accounts.lottery.key {
         return Err(LotteryError::InvalidLotteryAccount.into());
     }
-    msg!("+ 1");
     
     // The data must be large enough to hold at least the number of winners.
     let lottery_size = BASE_LOTTERY_DATA_SIZE + mem::size_of::<Ticket>() * (args.ticket_amount as usize);
@@ -107,22 +106,6 @@ pub fn create_lottery(
             &[bump],
         ],
     )?;
-    msg!("+ 3");
-    spl_token_create_account(TokenCreateAccount{
-        payer:accounts.payer.clone(),
-        mint:accounts.token_mint.clone(),
-        account:accounts.token_pool.clone(),
-        authority:accounts.lottery.clone(),
-        authority_seeds:&[
-            PREFIX.as_bytes(),
-            program_id.as_ref(),
-            &(*accounts.lottery_store.key).to_bytes(),
-            &[bump],
-        ],
-        token_program:accounts.token_program.clone(),
-        rent:accounts.rent.clone()
-    })?;
-    msg!("+ 2");
 
     // Configure Lottery.
     LotteryData {

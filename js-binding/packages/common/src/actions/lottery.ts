@@ -248,12 +248,6 @@ export async function createLottery(
       toPublicKey(lotteryProgramId),
     )
   )[0];
-  console.log('creator', creator);
-  console.log('lotteryKey', lotteryKey);
-  console.log('lotteryStoreId', lotteryStoreId);
-  console.log('tokenMint', tokenMint);
-  console.log('tokenPool', tokenPoolKey);
-  console.log('authority', authority);
   const keys = [
     {
       pubkey: toPublicKey(creator),
