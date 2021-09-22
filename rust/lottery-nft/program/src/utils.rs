@@ -202,7 +202,7 @@ pub fn spl_token_create_account(params: TokenCreateAccount<'_,'_>) -> ProgramRes
         .minimum_balance(size)
         .max(1)
         .saturating_sub(payer.lamports());
-
+    msg!("--1");
     invoke(
         &system_instruction::create_account(
             payer.key,
@@ -213,7 +213,7 @@ pub fn spl_token_create_account(params: TokenCreateAccount<'_,'_>) -> ProgramRes
         ),
         &[payer, account.clone(), token_program],
     )?;
-
+    msg!("--2");
     invoke_signed(
         &spl_token::instruction::initialize_account(
             &spl_token::id(),
