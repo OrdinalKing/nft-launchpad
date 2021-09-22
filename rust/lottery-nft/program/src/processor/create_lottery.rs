@@ -118,6 +118,7 @@ pub fn create_lottery(
         rent:accounts.rent.clone()
     })?;
     msg!("+ 2");
+    
     // Configure Lottery.
     LotteryData {
         authority: *accounts.authority.key,
