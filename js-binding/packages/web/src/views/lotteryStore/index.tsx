@@ -10,9 +10,14 @@ import { QUOTE_MINT } from './../../constants';
 import {
   useConnection,
   useMint,
+  CreateStoreArgs,
+  toPublicKey,
+  programIds,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { makeStore } from '../../actions';
 
 export const CreateLotteryStoreView = () => {
   const [form] = Form.useForm();
@@ -31,12 +36,49 @@ export const CreateLotteryStoreView = () => {
   const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 
   function createStore() {
-    setStoreID('0x' + genRanHex(40));
+    let storeid = '';
+    makeStore(connection, wallet, mintAddress, new CreateStoreArgs({
+    })).then(({txid,slot,store})=>{
+      console.log(txid);
+      storeid = store;
+    }).catch((reason)=>{ 
+      console.log(reason)
+    }).finally(async ()=>{
+      if(storeid != ""){
+        try{
+          console.log("store id",storeid);
+          await loadAccount(connection,toPublicKey(storeid),toPublicKey(programIds().lottery));
+          setStoreID(storeid);
+        }
+        catch(err:any){
+          console.log(err);
+        }
+      }
+    });
+
+    // setStoreID('0x' + genRanHex(40));
     setMintCount(0);
     setMintAddress('');
     setNFTUri('');
     setNFTName('');
     setNFTSymbol('');
+  }
+
+  async function loadAccount(
+    connection: Connection,
+    address: PublicKey,
+    programId: PublicKey,
+  ): Promise<Buffer> {
+    const accountInfo = await connection.getAccountInfo(address);
+    if (accountInfo === null) {
+      throw new Error('Failed to find account');
+    }
+  
+    if (!accountInfo.owner.equals(programId)) {
+      throw new Error(`Invalid owner: ${JSON.stringify(accountInfo.owner)}`);
+    }
+  
+    return Buffer.from(accountInfo.data);
   }
 
   function mintNFT() {

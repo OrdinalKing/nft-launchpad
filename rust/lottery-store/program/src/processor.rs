@@ -40,7 +40,7 @@ pub struct StoreData {
     /// The state the store is in, whether it has started or ended.
     pub state: StoreState,
 }
-pub const BASE_STORE_DATA_SIZE: usize = 32 + 32 + 32 + 32 + 8 + 8 + 1 + 8 + 8 + 8;
+pub const BASE_STORE_DATA_SIZE: usize = 32 + 32 + 32 + 8 + 8 + 1;
 
 impl StoreData {
     pub fn from_account_info(a: &AccountInfo) -> Result<StoreData, ProgramError> {
