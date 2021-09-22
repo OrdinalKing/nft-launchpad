@@ -60,7 +60,7 @@ export function Routes() {
               path="/auction/:id/billing"
               component={() => <BillingView />}
             />
-            <Route path="/" component={() => <HomeView />} />
+            <Route path="/" component={() => <div />} />
           </Switch>
         </Providers>
       </HashRouter>
