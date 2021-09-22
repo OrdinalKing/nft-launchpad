@@ -52,12 +52,13 @@ export const CreateLotteryNFTView = () => {
     })).then(({txid,slot,lottery})=>{
       console.log(txid);
       lotteryId = lottery;
-    }).catch((reason)=>{
+    }).catch((reason)=>{ 
       console.log(reason)
     }).finally(async ()=>{
       // find lottery
       if(lotteryId != ""){
         try{
+          console.log("lottery id",lotteryId);
           await loadAccount(connection,toPublicKey(lotteryId),toPublicKey(programIds().lottery));
           setCreatedLottery(lotteryId);
         }

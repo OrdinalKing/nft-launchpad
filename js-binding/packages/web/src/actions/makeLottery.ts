@@ -1,17 +1,18 @@
 import { Connection, Keypair, TransactionInstruction } from '@solana/web3.js';
 import {
-  utils,
   actions,
-  findProgramAddress,
   CreateLotteryArgs,
   StringPublicKey,
-  toPublicKey,
   WalletSigner,
   sendTransactionWithRetry,
+  LOTTERY_PREFIX,
+  toPublicKey,
+  utils,
+  findProgramAddress,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
 
-const { LOTTERY_PREFIX, createLottery } = actions;
+const { createLottery } = actions;
 
 // This command makes an Lottery
 export async function makeLottery(
@@ -28,10 +29,6 @@ export async function makeLottery(
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
   const PROGRAM_IDS = utils.programIds();
-  const tokenPool = new Keypair();
-
-  const signers: Keypair[] = [];
-  const instructions: TransactionInstruction[] = [];
   const lotteryKey = (
     await findProgramAddress(
       [
@@ -42,12 +39,16 @@ export async function makeLottery(
       toPublicKey(PROGRAM_IDS.lottery),
     )
   )[0];
+  const tokenPool = new Keypair();
+
+  const signers: Keypair[] = [];
+  const instructions: TransactionInstruction[] = [];
 
   const fullSettings = new CreateLotteryArgs({
     ...LotterySettings,
   });
 
-  createLottery(
+  await createLottery(
     fullSettings,
     wallet.publicKey.toBase58(),
     lotteryStore,
@@ -56,12 +57,13 @@ export async function makeLottery(
     lotteryKey,
     instructions,
   );
-
+  signers.push(tokenPool);
   const { txid, slot } = await sendTransactionWithRetry(
     connection,
     wallet,
     instructions,
     signers,
+    'single',
   );
 
   return { txid, slot, lottery: lotteryKey };
