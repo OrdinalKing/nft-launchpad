@@ -88,12 +88,17 @@ pub fn create_lottery(
         return Err(LotteryError::InvalidLotteryAccount.into());
     }
     msg!("+ 1");
+    let token_pool_seeds = [
+        PREFIX.as_bytes(),
+        program_id.as_ref(),
+        &(*accounts.token_pool.key).to_bytes(),
+    ];
     spl_token_create_account(TokenCreateAccount{
         payer:accounts.payer.clone(),
         mint:accounts.token_mint.clone(),
         account:accounts.token_pool.clone(),
         authority:accounts.authority.clone(),
-        authority_seeds:&lottery_seeds,
+        authority_seeds:&token_pool_seeds,
         token_program:accounts.token_program.clone(),
         rent:accounts.rent.clone()
     })?;
