@@ -113,12 +113,17 @@ pub fn create_lottery(
         mint:accounts.token_mint.clone(),
         account:accounts.token_pool.clone(),
         authority:accounts.lottery.clone(),
-        authority_seeds:&lottery_seeds,
+        authority_seeds:&[
+            PREFIX.as_bytes(),
+            program_id.as_ref(),
+            &(*accounts.lottery_store.key).to_bytes(),
+            &[bump],
+        ],
         token_program:accounts.token_program.clone(),
         rent:accounts.rent.clone()
     })?;
     msg!("+ 2");
-    
+
     // Configure Lottery.
     LotteryData {
         authority: *accounts.authority.key,
