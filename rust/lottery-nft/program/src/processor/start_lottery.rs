@@ -40,17 +40,10 @@ fn parse_accounts<'a, 'b: 'a>(
     Ok(accounts)
 }
 
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq)]
-pub struct StartLotteryArgs {
-    /// The resource being lotteryed. See LotteryData.
-    pub resource: Pubkey,
-}
 
 pub fn start_lottery<'a, 'b: 'a>(
     program_id: &Pubkey,
     accounts: &'a [AccountInfo<'b>],
-    args: StartLotteryArgs,
 ) -> ProgramResult {
     msg!("+ Starting Lottery");
     let accounts = parse_accounts(program_id, accounts)?;

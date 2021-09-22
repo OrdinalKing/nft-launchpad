@@ -11,6 +11,7 @@ import {
   MEMO_ID,
   VAULT_ID,
   AUCTION_ID,
+  LOTTERY_ID,
   toPublicKey,
 } from './ids';
 
@@ -48,6 +49,7 @@ export const programIds = () => {
     memo: MEMO_ID,
     vault: VAULT_ID,
     auction: AUCTION_ID,
+    lottery: LOTTERY_ID,
     metaplex: METAPLEX_ID,
     store: STORE,
   };

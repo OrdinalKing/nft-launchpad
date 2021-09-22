@@ -8,7 +8,6 @@ use solana_program::{
 
 pub use crate::processor::{
     create_lottery::CreateLotteryArgs,
-    start_lottery::StartLotteryArgs,
 };
 
 #[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq)]
@@ -28,7 +27,7 @@ pub enum LotteryInstruction {
     ///   0. `[signer]` The creator/authorised account.
     ///   1. `[writable]` Initialized lottery account.
     ///   2. `[]` Clock sysvar
-    StartLottery(StartLotteryArgs),
+    StartLottery,
 
     /// Place a bid on a running lottery.
     ///   0. `[signer]` The bidders primary account, for PDA calculation/transit auth.

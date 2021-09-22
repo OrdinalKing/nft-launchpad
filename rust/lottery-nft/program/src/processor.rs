@@ -35,7 +35,7 @@ pub fn process_instruction(
         LotteryInstruction::EndLottery => end_lottery(program_id, accounts),
         LotteryInstruction::GetTicket => get_ticket(program_id, accounts),
         LotteryInstruction::SetAuthority => set_authority(program_id, accounts),
-        LotteryInstruction::StartLottery(args) => start_lottery(program_id, accounts, args),
+        LotteryInstruction::StartLottery => start_lottery(program_id, accounts),
     }
 }
 

@@ -13,6 +13,7 @@ import {
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
+import moment from 'moment';
 
 export const CreateLotteryNFTView = () => {
   const [form] = Form.useForm();
@@ -21,24 +22,18 @@ export const CreateLotteryNFTView = () => {
   const wallet = useWallet();
   const mint = useMint(QUOTE_MINT);
   const { width } = useWindowDimensions();
-  const [storeID, setStoreID] = useState('');
-  const [mintAddress, setMintAddress] = useState('');
-  const [enddate, setEndDate] = useState('');
-  const [ticketPrice, setTicketPrice] = useState('');
-  const [ticketAmount, setTicketAmount] = useState('');
+  const [storeID, setStoreID] = useState('2Pgj2xq6G1oNcziFdHbt88hbmWaW1GQPdhcXPnNzZk42');
+  const [mintAddress, setMintAddress] = useState(QUOTE_MINT.toBase58());
+  const [enddate, setEndDate] = useState(moment().unix()+7 * 24 * 3600);
+  const [ticketPrice, setTicketPrice] = useState(1);
+  const [ticketAmount, setTicketAmount] = useState(300);
 
   const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 
   function createNFT() {
-    if (enddate == '' || ticketPrice == '' || ticketAmount == '') {
+    if (enddate == 0 || ticketPrice == 0 || ticketAmount == 0) {
       return;
     }
-    setStoreID('');
-    setMintAddress('');
-    setEndDate('');
-    setTicketPrice('');
-    setTicketAmount('');
-    form.resetFields();
   }
 
   return (
@@ -64,12 +59,12 @@ export const CreateLotteryNFTView = () => {
             name="storeid"
             rules={[
               {
-                required: true,
+                required: false,
                 message: 'Please input store id!',
               },
             ]}
           >
-            <Input value={storeID} onChange={e=> setStoreID(e.target.value)} />
+            <Input value={storeID} defaultValue={storeID} onChange={e=> setStoreID(e.target.value)} />
           </Form.Item>
 
           <Form.Item
@@ -77,12 +72,12 @@ export const CreateLotteryNFTView = () => {
             name="tokenmintaddress"
             rules={[
               {
-                required: true,
+                required: false,
                 message: 'Please input Token Mint Address!',
               },
             ]}
           >
-            <Input value={mintAddress} onChange={e=> setMintAddress(e.target.value)} />
+            <Input value={mintAddress} defaultValue={mintAddress} onChange={e=> setMintAddress(e.target.value)} />
           </Form.Item>
 
           <Form.Item
@@ -90,12 +85,12 @@ export const CreateLotteryNFTView = () => {
             name="enddate"
             rules={[
               {
-                required: true,
+                required: false,
                 message: 'Please input End Date!',
               },
             ]}
           >
-            <Input value={enddate} onChange={e=> setEndDate(e.target.value)} />
+            <Input type="number" value={enddate} defaultValue={enddate} onChange={e=> setEndDate(parseInt(e.target.value))} />
           </Form.Item>
 
           <Form.Item
@@ -103,24 +98,24 @@ export const CreateLotteryNFTView = () => {
             name="ticketprice"
             rules={[
               {
-                required: true,
+                required: false,
                 message: 'Please input Ticket Price!',
               },
             ]}
           >
-            <Input value={ticketPrice} onChange={e=> setTicketPrice(e.target.value)} />
+            <Input type="number" value={ticketPrice} defaultValue={ticketPrice} onChange={e=> setTicketPrice(parseInt(e.target.value))} />
           </Form.Item>
           <Form.Item
-            label="Token Amount"
+            label="Ticket Amount"
             name="tokenamount"
             rules={[
               {
-                required: true,
+                required: false,
                 message: 'Please input Token Amount!',
               },
             ]}
           >
-            <Input value={ticketAmount} onChange={e=> setTicketAmount(e.target.value)} />
+            <Input type="number" value={ticketAmount} defaultValue={ticketAmount} onChange={e=> setTicketAmount(parseInt(e.target.value))} />
           </Form.Item>
           <Form.Item
             wrapperCol={{
