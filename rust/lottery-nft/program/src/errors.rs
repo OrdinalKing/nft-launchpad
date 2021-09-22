@@ -146,6 +146,10 @@ pub enum LotteryError {
     /// Exceed available ticket amount
     #[error("Exceed available ticket amount")]
     ExceedTiketAmount,
+
+    /// Invalid token pool address
+    #[error("Invalid token pool address")]
+    InvalidTokenPool,
 }
 
 impl PrintProgramError for LotteryError {

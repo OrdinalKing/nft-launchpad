@@ -11,7 +11,6 @@ import BN from 'bn.js';
 import { AccountParser } from '../contexts';
 import moment from 'moment';
 import { findProgramAddress, StringPublicKey, toPublicKey } from '../utils';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 export const LOTTERY_PREFIX = 'lottery';
 
@@ -230,11 +229,11 @@ export async function createLottery(
   creator: StringPublicKey,
   lotteryStoreId: StringPublicKey,
   tokenMint: StringPublicKey,
-  tokenPool: StringPublicKey,
   authority: StringPublicKey,
   instructions: TransactionInstruction[],
 ) {
   const lotteryProgramId = programIds().lottery;
+  const tokenProgramId = programIds().token;
 
   const data = Buffer.from(serialize(LOTTERY_SCHEMA, settings));
 
@@ -248,11 +247,21 @@ export async function createLottery(
       toPublicKey(lotteryProgramId),
     )
   )[0];
+  const tokenPoolKey: StringPublicKey = (
+    await findProgramAddress(
+      [
+        Buffer.from(LOTTERY_PREFIX),
+        toPublicKey(tokenProgramId).toBuffer(),
+        toPublicKey(lotteryKey).toBuffer(),
+      ],
+      toPublicKey(tokenProgramId),
+    )
+  )[0];
   console.log('creator', creator);
   console.log('lotteryKey', lotteryKey);
   console.log('lotteryStoreId', lotteryStoreId);
   console.log('tokenMint', tokenMint);
-  console.log('tokenPool', tokenPool);
+  console.log('tokenPool', tokenPoolKey);
   console.log('authority', authority);
   const keys = [
     {
@@ -276,7 +285,7 @@ export async function createLottery(
       isWritable: true,
     },
     {
-      pubkey: toPublicKey(tokenPool),
+      pubkey: toPublicKey(tokenPoolKey),
       isSigner: true,
       isWritable: true,
     },
@@ -286,7 +295,7 @@ export async function createLottery(
       isWritable: true,
     },
     {
-      pubkey: toPublicKey(TOKEN_PROGRAM_ID),
+      pubkey: toPublicKey(tokenProgramId),
       isSigner: false,
       isWritable: false,
     },

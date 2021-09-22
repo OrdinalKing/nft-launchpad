@@ -88,21 +88,7 @@ pub fn create_lottery(
         return Err(LotteryError::InvalidLotteryAccount.into());
     }
     msg!("+ 1");
-    let token_pool_seeds = [
-        PREFIX.as_bytes(),
-        program_id.as_ref(),
-        &(*accounts.token_pool.key).to_bytes(),
-    ];
-    spl_token_create_account(TokenCreateAccount{
-        payer:accounts.payer.clone(),
-        mint:accounts.token_mint.clone(),
-        account:accounts.token_pool.clone(),
-        authority:accounts.authority.clone(),
-        authority_seeds:&token_pool_seeds,
-        token_program:accounts.token_program.clone(),
-        rent:accounts.rent.clone()
-    })?;
-    msg!("+ 2");
+    
     // The data must be large enough to hold at least the number of winners.
     let lottery_size = BASE_LOTTERY_DATA_SIZE + mem::size_of::<Ticket>() * (args.ticket_amount as usize);
 
@@ -122,6 +108,31 @@ pub fn create_lottery(
         ],
     )?;
     msg!("+ 3");
+    let token_pool_seeds = [
+        PREFIX.as_bytes(),
+        (*accounts.token_program.key).as_ref(),
+        &(*accounts.lottery.key).to_bytes(),
+    ];
+    let (token_pool_key, token_pool_bump) = Pubkey::find_program_address(&token_pool_seeds, accounts.token_program.key);
+    
+    if token_pool_key != *accounts.token_pool.key {
+        return Err(LotteryError::InvalidTokenPool.into());
+    }
+    spl_token_create_account(TokenCreateAccount{
+        payer:accounts.payer.clone(),
+        mint:accounts.token_mint.clone(),
+        account:accounts.token_pool.clone(),
+        authority:accounts.lottery.clone(),
+        authority_seeds:&[
+            PREFIX.as_bytes(),
+            (*accounts.token_program.key).as_ref(),
+            &(*accounts.lottery.key).to_bytes(),
+            &[token_pool_bump],
+        ],
+        token_program:accounts.token_program.clone(),
+        rent:accounts.rent.clone()
+    })?;
+    msg!("+ 2");
     // Configure Lottery.
     LotteryData {
         authority: *accounts.authority.key,
