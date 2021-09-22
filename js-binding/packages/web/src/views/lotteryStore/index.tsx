@@ -47,8 +47,8 @@ export const CreateLotteryStoreView = () => {
       if(storeid != ""){
         try{
           console.log("store id",storeid);
-          await loadAccount(connection,toPublicKey(storeid),toPublicKey(programIds().lottery));
           setStoreID(storeid);
+          await loadAccount(connection, toPublicKey(storeid), toPublicKey(programIds().store));
         }
         catch(err:any){
           console.log(err);
@@ -56,7 +56,6 @@ export const CreateLotteryStoreView = () => {
       }
     });
 
-    // setStoreID('0x' + genRanHex(40));
     setMintCount(0);
     setMintAddress('');
     setNFTUri('');

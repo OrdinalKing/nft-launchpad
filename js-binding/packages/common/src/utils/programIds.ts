@@ -12,6 +12,7 @@ import {
   VAULT_ID,
   AUCTION_ID,
   LOTTERY_ID,
+  STORE_ID,
   toPublicKey,
 } from './ids';
 
@@ -35,6 +36,7 @@ export const getStoreID = async (storeOwnerAddress?: string) => {
 
 export const setProgramIds = async (store?: string) => {
   STORE = store ? toPublicKey(store) : undefined;
+  console.log(STORE);
 };
 
 let STORE: PublicKey | undefined;
@@ -50,7 +52,7 @@ export const programIds = () => {
     vault: VAULT_ID,
     auction: AUCTION_ID,
     lottery: LOTTERY_ID,
+    store: STORE_ID,
     metaplex: METAPLEX_ID,
-    store: STORE,
   };
 };
