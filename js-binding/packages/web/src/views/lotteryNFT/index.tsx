@@ -28,7 +28,7 @@ export const CreateLotteryNFTView = () => {
   const wallet = useWallet();
   const mint = useMint(QUOTE_MINT);
   const { width } = useWindowDimensions();
-  const [storeID, setStoreID] = useState('2Pgj2xq6G1oNcziFdHbt88hbmWaW1GQPdhcXPnNzZk42');
+  const [storeID, setStoreID] = useState('2Pgj2xq6G1oNcziFdHbt88hbmWaW1GQPdhcXPkNzZk42');
   const [createdLottery, setCreatedLottery] = useState('');
   const [mintAddress, setMintAddress] = useState(QUOTE_MINT.toBase58());
   const [enddate, setEndDate] = useState(moment().unix()+7 * 24 * 3600);

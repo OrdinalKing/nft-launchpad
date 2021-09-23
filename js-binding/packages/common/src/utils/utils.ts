@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import {
   AccountLayout,
   MintInfo,
-  MintLayout,
   Token,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
@@ -345,7 +344,7 @@ export async function createSPLTokenKeypair(
   mint: PublicKey,
 ) {
   const accountRentExempt = await connection.getMinimumBalanceForRentExemption(
-    MintLayout.span,
+    AccountLayout.span,
   );
   const newTokenKeypair = createSplKeypair(
     instructions,
