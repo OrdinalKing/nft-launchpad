@@ -52,7 +52,6 @@ export default class MetaplexDocument extends Document {
         <body>
           <Main />
           <NextScript />
-          
         </body>
       </Html>
     );
