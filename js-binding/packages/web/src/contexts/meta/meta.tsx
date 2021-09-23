@@ -109,29 +109,7 @@ export function MetaProvider({ children = null as any }) {
   );
 
   useEffect(() => {
-    (async () => {
-      if (!storeAddress) {
-        if (isReady) {
-          setIsLoading(false);
-        }
-        return;
-      } else if (!state.store) {
-        setIsLoading(true);
-      }
-
-      console.log('-----> Query started');
-
-      const nextState = await loadAccounts(connection, all);
-
-      console.log('------->Query finished');
-
-      setState(nextState);
-
-      setIsLoading(false);
-      console.log('------->set finished');
-
-      updateMints(nextState.metadataByMint);
-    })();
+    
   }, [connection, setState, updateMints, storeAddress, isReady]);
 
   const updateStateValue = useMemo<UpdateStateValueFunc>(
@@ -145,47 +123,7 @@ export function MetaProvider({ children = null as any }) {
   const whitelistedCreatorsByCreator = state.whitelistedCreatorsByCreator;
 
   useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    const vaultSubId = connection.onProgramAccountChange(
-      toPublicKey(VAULT_ID),
-      onChangeAccount(processVaultData, updateStateValue, all),
-    );
-
-    const auctionSubId = connection.onProgramAccountChange(
-      toPublicKey(AUCTION_ID),
-      onChangeAccount(processAuctions, updateStateValue, all),
-    );
-
-    const metaplexSubId = connection.onProgramAccountChange(
-      toPublicKey(METAPLEX_ID),
-      onChangeAccount(processMetaplexAccounts, updateStateValue, all),
-    );
-
-    const metaSubId = connection.onProgramAccountChange(
-      toPublicKey(METADATA_PROGRAM_ID),
-      onChangeAccount(
-        processMetaData,
-        async (prop, key, value) => {
-          if (prop === 'metadataByMint') {
-            const nextState = await metadataByMintUpdater(value, state, all);
-            setState(nextState);
-          } else {
-            updateStateValue(prop, key, value);
-          }
-        },
-        all,
-      ),
-    );
-
-    return () => {
-      connection.removeProgramAccountChangeListener(vaultSubId);
-      connection.removeProgramAccountChangeListener(metaplexSubId);
-      connection.removeProgramAccountChangeListener(metaSubId);
-      connection.removeProgramAccountChangeListener(auctionSubId);
-    };
+    
   }, [
     connection,
     updateStateValue,

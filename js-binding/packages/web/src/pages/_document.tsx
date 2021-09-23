@@ -52,23 +52,7 @@ export default class MetaplexDocument extends Document {
         <body>
           <Main />
           <NextScript />
-          <script
-            async
-            src="https://platform.twitter.com/widgets.js"
-            charSet="utf-8"
-          />
-          <script
-            type="text/javascript"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function () {
-                  var s = document.createElement("script");
-                  s.src = "https://stackpile.io/stack_162299.js"; s.async = true;
-                  var e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(s, e);
-                })();
-          `,
-            }}
-          />
+          
         </body>
       </Html>
     );
