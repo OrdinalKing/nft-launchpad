@@ -11,6 +11,11 @@ use {
     },
 };
 
+pub use crate::processor::{
+    mint_nft::MintNFTArgs,
+    create_store::CreateStoreArgs,
+};
+
 /// Instructions supported by the Metadata program.
 #[derive(BorshSerialize, BorshDeserialize, Clone)]
 pub enum StoreInstruction {
@@ -25,6 +30,6 @@ pub enum StoreInstruction {
     ///   1. `[writable]` Uninitialized store account.
     ///   2. `[]` Rent sysvar
     ///   3. `[]` System account
-    MintNFT(MintStoreArgs),
+    MintNFT(MintNFTArgs),
 }
 

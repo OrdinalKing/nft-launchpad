@@ -27,64 +27,42 @@ pub fn process_instruction(
     }
 }
 
+
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq, Debug)]
 pub struct StoreData {
     /// Pubkey of the authority with permission to modify this store.
     pub authority: Pubkey,
-    /// Token mint for the SPL token being used to bid
-    pub token_mint: Pubkey,
-    /// Token account to store all bids
-    pub token_pool: Pubkey,
-    /// Slot time the store was officially ended by.
-    pub ended_at: u64,
-    /// End time is the cut-off point that the store is forced to end by.
-    pub end_store_at: u64,
-    /// The state the store is in, whether it has started or ended.
-    pub state: StoreState,
+    /// current nft amount
+    pub nft_amount: u64,
+    pub bump: u8,
 }
-pub const BASE_STORE_DATA_SIZE: usize = 32 + 32 + 32 + 8 + 8 + 1;
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq, Debug)]
+pub struct NFTMeta {
+    /// Pubkey of the authority with permission to modify this store.
+    pub store_id: Pubkey,
+    /// The name of the asset
+    pub name: String,
+    /// The symbol for the asset
+    pub symbol: String,
+    /// URI pointing to JSON representing the asset
+    pub uri: String,
+    /// Pubkey for mint address
+    pub mint: Pubkey,
+    /// token pool to store current nft
+    pub token_pool: Pubkey,
+    /// Pubkey of the authority with permission to modify this store.
+    pub authority: Pubkey,
+    /// flag of current nft is sold or not
+    pub exist_nft: u8,
+    pub bump: u8,
+}
 
 impl StoreData {
     pub fn from_account_info(a: &AccountInfo) -> Result<StoreData, ProgramError> {
-        if (a.data_len() - BASE_STORE_DATA_SIZE) != 0 {
-            return Err(StoreError::DataTypeMismatch.into());
-        }
-
         let store: StoreData = try_from_slice_unchecked(&a.data.borrow_mut())?;
-
         Ok(store)
-    }
-}
-
-/// Define valid store state transitions.
-#[repr(C)]
-#[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq, Debug)]
-pub enum StoreState {
-    Created,
-    Started,
-    Ended,
-}
-
-impl StoreState {
-    pub fn create() -> Self {
-        StoreState::Created
-    }
-
-    #[inline(always)]
-    pub fn start(self) -> Result<Self, ProgramError> {
-        match self {
-            StoreState::Created => Ok(StoreState::Started),
-            _ => Err(StoreError::StoreTransitionInvalid.into()),
-        }
-    }
-
-    #[inline(always)]
-    pub fn end(self) -> Result<Self, ProgramError> {
-        match self {
-            StoreState::Started => Ok(StoreState::Ended),
-            StoreState::Created => Ok(StoreState::Ended),
-            _ => Err(StoreError::StoreTransitionInvalid.into()),
-        }
     }
 }
