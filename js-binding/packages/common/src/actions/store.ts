@@ -114,7 +114,7 @@ export async function createStore(
   authority: StringPublicKey,
   instructions: TransactionInstruction[],
 ) {
-  const lotteryProgramId = programIds().lottery;
+  const lotteryProgramId = programIds().store;
 
   const data = Buffer.from(serialize(STORE_SCHEMA, settings));
 
