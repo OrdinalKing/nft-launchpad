@@ -35,9 +35,18 @@ export const CreateLotteryStoreView = () => {
 
   const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 
-  function createStore() {
+  async function createStore() {
     let storeid = '';
-    makeStore(connection, wallet, mintAddress, new CreateStoreArgs({
+    const storeProgramId = programIds().store;
+    const STORE_PREFIX = 'store';
+
+    let [, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(STORE_PREFIX), toPublicKey(storeProgramId).toBuffer()],
+      toPublicKey(storeProgramId),
+    ); 
+
+    makeStore(connection, wallet, new CreateStoreArgs({
+      bump: nonce,
     })).then(({txid,slot,store})=>{
       console.log(txid);
       storeid = store;
