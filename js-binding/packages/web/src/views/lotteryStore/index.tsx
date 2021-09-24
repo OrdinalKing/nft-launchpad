@@ -13,11 +13,12 @@ import {
   CreateStoreArgs,
   toPublicKey,
   programIds,
+  MintNFTArgs,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { makeStore } from '../../actions';
+import { makeStore, mintNFTStore } from '../../actions';
 
 export const CreateLotteryStoreView = () => {
   const [form] = Form.useForm();
@@ -89,17 +90,49 @@ export const CreateLotteryStoreView = () => {
     return Buffer.from(accountInfo.data);
   }
 
-  function mintNFT() {
+  async function mintNFT() {
+    let mintAdd = '';
+
     if (nfturi == '' || nftname == '' || nftsymbol == '') {
       return;
     }
 
-    setMintAddress('0x' + genRanHex(40));
-    setMintCount(mintCount + 1);
-    setNFTUri('');
-    setNFTName('');
-    setNFTSymbol('');
-    form.resetFields();
+    const storeProgramId = programIds().store;
+    const STORE_PREFIX = 'store';
+
+    let [, nonce] = await PublicKey.findProgramAddress(
+      [Buffer.from(STORE_PREFIX), toPublicKey(storeProgramId).toBuffer()],
+      toPublicKey(storeProgramId),
+    ); 
+
+    mintNFTStore(connection, wallet, storeID, new MintNFTArgs({
+      name: nftname,
+      symbol: nftsymbol,
+      uri: nfturi,
+      bump: nonce,
+    })).then(({txid,slot,mint})=>{
+      console.log(txid);
+      mintAdd = mint;
+    }).catch((reason)=>{ 
+      console.log(reason)
+    }).finally(async ()=>{
+      if(mintAdd != ""){
+        try{
+          console.log("mint address",mintAdd);
+          setMintAddress(mintAdd);
+          await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(programIds().store));
+          setMintCount(mintCount + 1);
+          setNFTUri('');
+          setNFTName('');
+          setNFTSymbol('');
+          form.resetFields();
+        }
+        catch(err:any){
+          console.log(err);
+        }
+      }
+    });
+
   }
 
   return (

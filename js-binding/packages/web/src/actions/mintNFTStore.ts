@@ -1,5 +1,5 @@
 import { Connection, Keypair, TransactionInstruction } from '@solana/web3.js';
-// import { MintLayout } from '@solana/spl-token';
+import { MintLayout } from '@solana/spl-token';
 
 import {
   actions,
@@ -7,13 +7,11 @@ import {
   WalletSigner,
   sendTransactionWithRetry,
   toPublicKey,
-  utils,
   MintNFTArgs,
+  createSPLTokenKeypair,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
-import { Token } from '@solana/spl-token';
-// import { createMintAndAccountWithOne } from './createMintAndAccountWithOne';
-// import { sign } from 'crypto';
+import { createMint } from '@oyster/common';
 
 const { mintNFT } = actions;
 
@@ -26,12 +24,9 @@ export async function mintNFTStore(
 ): Promise<{
   txid: string;
   slot: number;
-  store: string;
+  mint: string;
 }> {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
-  const _wallet: any = wallet;
-
-  const PROGRAM_IDS = utils.programIds();
   // const storeKey = (
   //   await findProgramAddress(
   //     [
@@ -45,48 +40,51 @@ export async function mintNFTStore(
   const instructions: TransactionInstruction[] = [];
   const signers: Keypair[] = [];
 
-  // const mintRentExempt = await connection.getMinimumBalanceForRentExemption(
-  //   MintLayout.span,
-  // );
-
-  const _token = Token.createMint(
-    connection,
-    _wallet,
-    toPublicKey(storeid),
-    null,
-    0,
-    toPublicKey(PROGRAM_IDS.store),
+  const mintRentExempt = await connection.getMinimumBalanceForRentExemption(
+    MintLayout.span,
   );
 
-  const account = (await _token).createAccount(toPublicKey(storeid));
+  // const _token = Token.createMint(
+  //   connection,
+  //   _wallet,
+  //   toPublicKey(storeid),
+  //   null,
+  //   0,
+  //   toPublicKey(PROGRAM_IDS.store),
+  // );
 
-  (await _token).mintTo(toPublicKey(storeid), toPublicKey(storeid), signers, 1);
+  // console.log(toPublicKey(storeid));
+  // const account = (await _token).createAccount(toPublicKey(storeid));
 
-  (await _token).setAuthority(
-    await account,
+  // (await _token).mintTo(toPublicKey(storeid), toPublicKey(storeid), signers, 1);
+
+  // (await _token).setAuthority(
+  //   await account,
+  //   toPublicKey(storeid),
+  //   'MintTokens',
+  //   toPublicKey(storeid),
+  //   signers,
+  // );
+
+  const account = await createMint(
+    instructions,
+    wallet.publicKey,
+    mintRentExempt,
+    0,
     toPublicKey(storeid),
-    'MintTokens',
     toPublicKey(storeid),
     signers,
   );
 
-  // const { mint, account} = await createMintAndAccountWithOne(
-  //   wallet.publicKey,
-  //   storeid,
-  //   mintRentExempt,
-  //   instructions,
-  //   signers,
-  // );
+  const tokenPoolAccount = await createSPLTokenKeypair(
+    instructions,
+    connection,
+    wallet.publicKey,
+    toPublicKey(storeid),
+    account,
+  );
 
-  // const tokenPoolAccount = await createSPLTokenKeypair(
-  //   instructions,
-  //   connection,
-  //   wallet.publicKey,
-  //   toPublicKey(storeid),
-  //   mintToken,
-  // );
-
-  // signers.push(tokenPoolAccount);
+  signers.push(tokenPoolAccount);
 
   const fullSettings = new MintNFTArgs({
     ...mintNFTSetting,
@@ -96,10 +94,12 @@ export async function mintNFTStore(
     fullSettings,
     wallet.publicKey.toBase58(),
     storeid,
-    (await _token).publicKey.toBase58(),
-    (await account).toBase58(),
+    account.toBase58(),
+    tokenPoolAccount.publicKey.toBase58(),
     instructions,
   );
+
+  console.log(account.toBase58());
 
   const { txid, slot } = await sendTransactionWithRetry(
     connection,
@@ -109,5 +109,5 @@ export async function mintNFTStore(
     'single',
   );
 
-  return { txid, slot, store: storeid };
+  return { txid, slot, mint: account.toBase58() };
 }
