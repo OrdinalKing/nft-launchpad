@@ -37,12 +37,15 @@ use {
 
 struct Accounts<'a, 'b: 'a> {
     lottery: &'a AccountInfo<'b>,
+    ticket: &'a AccountInfo<'b>,
     bidder: &'a AccountInfo<'b>,
     bidder_token: &'a AccountInfo<'b>,
     pool_token: &'a AccountInfo<'b>,
     mint: &'a AccountInfo<'b>,
     transfer_authority: &'a AccountInfo<'b>,
     token_program: &'a AccountInfo<'b>,
+    rent: &'a AccountInfo<'b>,
+    system: &'a AccountInfo<'b>,
     clock_sysvar: &'a AccountInfo<'b>,
 }
 
@@ -53,12 +56,15 @@ fn parse_accounts<'a, 'b: 'a>(
     let account_iter = &mut accounts.iter();
     let accounts = Accounts {
         lottery: next_account_info(account_iter)?,
+        ticket: next_account_info(account_iter)?,
         bidder: next_account_info(account_iter)?,
         bidder_token: next_account_info(account_iter)?,
         pool_token: next_account_info(account_iter)?,
         mint: next_account_info(account_iter)?,
         transfer_authority: next_account_info(account_iter)?,
         token_program: next_account_info(account_iter)?,
+        rent: next_account_info(account_iter)?,
+        system: next_account_info(account_iter)?,
         clock_sysvar: next_account_info(account_iter)?,
     };
 
@@ -85,18 +91,20 @@ pub fn get_ticket<'r, 'b: 'r>(
     msg!("+ Processing GetTicket");
     let accounts = parse_accounts(program_id, accounts)?;
 
-    // Load the lottery and verify this bid is valid.
-    let mut lottery = LotteryData::from_account_info(accounts.lottery)?;
-
     // Load the clock, used for various lottery timing.
     let clock = Clock::from_account_info(accounts.clock_sysvar)?;
 
+    // Load the lottery and verify this bid is valid.
+    let mut lottery = LotteryData::from_account_info(accounts.lottery)?;
+
+    if lottery.sold_amount >= lottery.ticket_amount {
+        return Err(LotteryError::ExceedTiketAmount.into());
+    }
     
     // Can't buy a ticket on an lottery that isn't running.
     if lottery.state != LotteryState::Started {
         return Err(LotteryError::InvalidState.into());
     }
-
     let bump_authority_seeds = &[
         PREFIX.as_bytes(),
         program_id.as_ref(),
@@ -114,15 +122,44 @@ pub fn get_ticket<'r, 'b: 'r>(
         amount: lottery.ticket_price,
     })?;
 
-    if lottery.current_tickets.len() as u64 >= lottery.ticket_amount {
-        return Err(LotteryError::ExceedTiketAmount.into());
-    }
-
-    lottery.current_tickets.push(Ticket{
-        wallet:*accounts.bidder.key,
-        state:TicketState::buy()
-    });
+    let ticket_number = 0;
+    let state = TicketState::buy().win()?;
     
+
+    let ticket_seeds = [
+        PREFIX.as_bytes(),
+        program_id.as_ref(),
+        &(*accounts.ticket.key).to_bytes(),
+    ];
+
+    // Derive the address we'll store the lottery in, and confirm it matches what we expected the
+    // user to provide.
+    let (ticket_authority, ticket_bump) = Pubkey::find_program_address(&ticket_seeds, program_id);
+    
+    if accounts.ticket.data_is_empty() {
+        // Create lottery account with enough space for a tickets tracking.
+        create_or_allocate_account_raw(
+            *program_id,
+            accounts.ticket,
+            accounts.rent,
+            accounts.system,
+            accounts.bidder,
+            mem::size_of::<Ticket>(),
+            &[
+                PREFIX.as_bytes(),
+                program_id.as_ref(),
+                &(*accounts.ticket.key).to_bytes(),
+                &[ticket_bump],
+            ],
+        )?;
+        let mut ticket = Ticket{
+            owner:*accounts.bidder.key,
+            state:state,
+            ticket_number:ticket_number
+        }
+        .serialize(&mut *accounts.ticket.data.borrow_mut())?;
+    }
+    lottery.sold_amount += 1;
     lottery.serialize(&mut *accounts.lottery.data.borrow_mut())?;
 
     Ok(())
