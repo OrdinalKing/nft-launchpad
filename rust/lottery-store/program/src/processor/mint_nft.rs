@@ -124,6 +124,4 @@ pub fn mint_nft(
   .serialize(&mut * accounts.nftmeta.data.borrow_mut())?;
 
   Ok(())
-)?;
-
 }
