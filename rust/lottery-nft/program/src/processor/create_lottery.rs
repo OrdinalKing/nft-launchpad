@@ -3,8 +3,7 @@ use mem::size_of;
 use crate::{
     errors::LotteryError,
     processor::{
-        LotteryData, LotteryState, Ticket, TicketState, 
-        BASE_LOTTERY_DATA_SIZE
+        LotteryData, LotteryState, Ticket, TicketState
     },
     utils::{assert_derivation, assert_owned_by, create_or_allocate_account_raw, spl_token_create_account,TokenCreateAccount},
     PREFIX,
@@ -89,24 +88,26 @@ pub fn create_lottery(
     }
     
     // The data must be large enough to hold at least the number of winners.
-    let lottery_size = BASE_LOTTERY_DATA_SIZE + mem::size_of::<Ticket>() * (args.ticket_amount as usize);
+    let lottery_size = mem::size_of::<LotteryData>();
 
-    // Create lottery account with enough space for a tickets tracking.
-    create_or_allocate_account_raw(
-        *program_id,
-        accounts.lottery,
-        accounts.rent,
-        accounts.system,
-        accounts.payer,
-        lottery_size,
-        &[
-            PREFIX.as_bytes(),
-            program_id.as_ref(),
-            &(*accounts.lottery_store.key).to_bytes(),
-            &[bump],
-        ],
-    )?;
-
+    if accounts.lottery.data_is_empty() {
+        // Create lottery account with enough space for a tickets tracking.
+        create_or_allocate_account_raw(
+            *program_id,
+            accounts.lottery,
+            accounts.rent,
+            accounts.system,
+            accounts.payer,
+            lottery_size,
+            &[
+                PREFIX.as_bytes(),
+                program_id.as_ref(),
+                &(*accounts.lottery_store.key).to_bytes(),
+                &[bump],
+            ],
+        )?;
+    }
+    
     // Configure Lottery.
     LotteryData {
         authority: *accounts.authority.key,
@@ -119,7 +120,7 @@ pub fn create_lottery(
         nft_amount: args.nft_amount as u64,
         ticket_price: args.ticket_price,
         ticket_amount: args.ticket_amount as u64,
-        current_tickets: Vec::new()
+        sold_amount: 0
     }
     .serialize(&mut *accounts.lottery.data.borrow_mut())?;
     

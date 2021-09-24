@@ -43,8 +43,9 @@ pub fn process_instruction(
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq, Debug)]
 pub struct Ticket {
-    pub wallet: Pubkey,
+    pub owner: Pubkey,
     pub state: TicketState,
+    pub ticket_number: u64
 }
 
 #[repr(C)]
@@ -70,17 +71,12 @@ pub struct LotteryData {
     pub ticket_price: u64,
     /// ticket amount for this lottery
     pub ticket_amount: u64,
-    /// current sold ticket array
-    pub current_tickets: Vec<Ticket>
+    /// current sold ticket count
+    pub sold_amount: u64,
 }
-pub const BASE_LOTTERY_DATA_SIZE: usize = 32 + 32 + 32 + 32 + 8 + 8 + 1 + 8 + 8 + 8;
 
 impl LotteryData {
     pub fn from_account_info(a: &AccountInfo) -> Result<LotteryData, ProgramError> {
-        if (a.data_len() - BASE_LOTTERY_DATA_SIZE) % mem::size_of::<Ticket>() != 0 {
-            return Err(LotteryError::DataTypeMismatch.into());
-        }
-
         let lottery: LotteryData = try_from_slice_unchecked(&a.data.borrow_mut())?;
 
         Ok(lottery)
