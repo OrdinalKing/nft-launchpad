@@ -1,11 +1,9 @@
 use crate::errors::StoreError;
-use arrayref::array_ref;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, borsh::try_from_slice_unchecked, clock::UnixTimestamp,
-    entrypoint::ProgramResult, hash::Hash, msg, program_error::ProgramError, pubkey::Pubkey,
+    account_info::AccountInfo, borsh::try_from_slice_unchecked,
+    entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey,
 };
-use std::{cell::Ref, cmp, mem};
 
 // Declare submodules, each contains a single handler for each instruction variant in the program.
 pub mod create_store;

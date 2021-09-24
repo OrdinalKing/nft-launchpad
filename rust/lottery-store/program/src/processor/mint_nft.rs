@@ -14,7 +14,6 @@ use {
         program_error::ProgramError,
         pubkey::Pubkey,
     },
-    std::mem,
 };
 
 

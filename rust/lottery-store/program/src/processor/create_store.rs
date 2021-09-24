@@ -15,7 +15,6 @@ use {
         program_error::ProgramError,
         pubkey::Pubkey,
     },
-    std::mem,
 };
 
 struct Accounts<'a, 'b: 'a> {
