@@ -70,7 +70,7 @@ pub fn create_store(
         accounts.payer,
         std::mem::size_of::<StoreData>() ,
         &[
-            &(*accounts.store_id).to_bytes(),
+            &(*accounts.store_id.key).to_bytes(),
             &[args.bump],
         ],
     )?;
