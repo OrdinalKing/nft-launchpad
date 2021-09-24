@@ -6,7 +6,7 @@ use {
     crate::{error::StoreError, processor},
     solana_program::{
         account_info::AccountInfo, entrypoint, entrypoint::ProgramResult,
-        program_error::StoreError, pubkey::Pubkey,
+        program_error::PrintProgramError, pubkey::Pubkey,
     },
 };
 
