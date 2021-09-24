@@ -1,6 +1,6 @@
 use {
     crate::{
-        error::MetadataError,
+        error::StoreError,
         state::{
             get_reservation_list, Data, EditionMarker, Key, MasterEditionV1, Metadata, EDITION,
             EDITION_MARKER_BIT_SIZE, MAX_CREATOR_LIMIT, MAX_EDITION_LEN, MAX_EDITION_MARKER_SIZE,
@@ -37,29 +37,29 @@ pub fn assert_data_valid(
     allow_direct_creator_writes: bool,
 ) -> ProgramResult {
     if data.name.len() > MAX_NAME_LENGTH {
-        return Err(MetadataError::NameTooLong.into());
+        return Err(StoreError::NameTooLong.into());
     }
 
     if data.symbol.len() > MAX_SYMBOL_LENGTH {
-        return Err(MetadataError::SymbolTooLong.into());
+        return Err(StoreError::SymbolTooLong.into());
     }
 
     if data.uri.len() > MAX_URI_LENGTH {
-        return Err(MetadataError::UriTooLong.into());
+        return Err(StoreError::UriTooLong.into());
     }
 
     if data.seller_fee_basis_points > 10000 {
-        return Err(MetadataError::InvalidBasisPoints.into());
+        return Err(StoreError::InvalidBasisPoints.into());
     }
 
     if data.creators.is_some() {
         if let Some(creators) = &data.creators {
             if creators.len() > MAX_CREATOR_LIMIT {
-                return Err(MetadataError::CreatorsTooLong.into());
+                return Err(StoreError::CreatorsTooLong.into());
             }
 
             if creators.is_empty() {
-                return Err(MetadataError::CreatorsMustBeAtleastOne.into());
+                return Err(StoreError::CreatorsMustBeAtleastOne.into());
             } else {
                 let mut found = false;
                 let mut total: u8 = 0;
@@ -67,13 +67,13 @@ pub fn assert_data_valid(
                     let creator = &creators[i];
                     for j in (i + 1)..creators.len() {
                         if creators[j].address == creator.address {
-                            return Err(MetadataError::DuplicateCreatorAddress.into());
+                            return Err(StoreError::DuplicateCreatorAddress.into());
                         }
                     }
 
                     total = total
                         .checked_add(creator.share)
-                        .ok_or(MetadataError::NumericalOverflowError)?;
+                        .ok_or(StoreError::NumericalOverflowError)?;
 
                     if creator.address == *update_authority {
                         found = true;
@@ -92,35 +92,35 @@ pub fn assert_data_valid(
                                 Some(existing_creator) => {
                                     if creator.verified && !existing_creator.verified {
                                         return Err(
-                                            MetadataError::CannotVerifyAnotherCreator.into()
+                                            StoreError::CannotVerifyAnotherCreator.into()
                                         );
                                     } else if !creator.verified && existing_creator.verified {
                                         return Err(
-                                            MetadataError::CannotUnverifyAnotherCreator.into()
+                                            StoreError::CannotUnverifyAnotherCreator.into()
                                         );
                                     }
                                 }
                                 None => {
                                     if creator.verified {
                                         return Err(
-                                            MetadataError::CannotVerifyAnotherCreator.into()
+                                            StoreError::CannotVerifyAnotherCreator.into()
                                         );
                                     }
                                 }
                             }
                         } else {
                             if creator.verified {
-                                return Err(MetadataError::CannotVerifyAnotherCreator.into());
+                                return Err(StoreError::CannotVerifyAnotherCreator.into());
                             }
                         }
                     }
                 }
 
                 if !found && !allow_direct_creator_writes {
-                    return Err(MetadataError::MustBeOneOfCreators.into());
+                    return Err(StoreError::MustBeOneOfCreators.into());
                 }
                 if total != 100 {
-                    return Err(MetadataError::ShareTotalMustBe100.into());
+                    return Err(StoreError::ShareTotalMustBe100.into());
                 }
             }
         }
@@ -135,7 +135,7 @@ pub fn assert_initialized<T: Pack + IsInitialized>(
 ) -> Result<T, ProgramError> {
     let account: T = T::unpack_unchecked(&account_info.data.borrow())?;
     if !account.is_initialized() {
-        Err(MetadataError::Uninitialized.into())
+        Err(StoreError::Uninitialized.into())
     } else {
         Ok(account)
     }
@@ -195,11 +195,11 @@ pub fn assert_update_authority_is_correct(
     update_authority_info: &AccountInfo,
 ) -> ProgramResult {
     if metadata.update_authority != *update_authority_info.key {
-        return Err(MetadataError::UpdateAuthorityIncorrect.into());
+        return Err(StoreError::UpdateAuthorityIncorrect.into());
     }
 
     if !update_authority_info.is_signer {
-        return Err(MetadataError::UpdateAuthorityIsNotSigner.into());
+        return Err(StoreError::UpdateAuthorityIsNotSigner.into());
     }
 
     Ok(())
@@ -259,17 +259,17 @@ pub fn assert_mint_authority_matches_mint(
 ) -> ProgramResult {
     match mint_authority {
         COption::None => {
-            return Err(MetadataError::InvalidMintAuthority.into());
+            return Err(StoreError::InvalidMintAuthority.into());
         }
         COption::Some(key) => {
             if mint_authority_info.key != key {
-                return Err(MetadataError::InvalidMintAuthority.into());
+                return Err(StoreError::InvalidMintAuthority.into());
             }
         }
     }
 
     if !mint_authority_info.is_signer {
-        return Err(MetadataError::NotMintAuthority.into());
+        return Err(StoreError::NotMintAuthority.into());
     }
 
     Ok(())
@@ -286,12 +286,12 @@ pub fn assert_supply_invariance(
         let current_supply = printing_mint
             .supply
             .checked_add(master_edition.supply)
-            .ok_or(MetadataError::NumericalOverflowError)?;
+            .ok_or(StoreError::NumericalOverflowError)?;
         let new_proposed_supply = current_supply
             .checked_add(new_supply)
-            .ok_or(MetadataError::NumericalOverflowError)?;
+            .ok_or(StoreError::NumericalOverflowError)?;
         if new_proposed_supply > max_supply {
-            return Err(MetadataError::PrintingWouldBreachMaximumSupply.into());
+            return Err(StoreError::PrintingWouldBreachMaximumSupply.into());
         }
     }
 
@@ -350,7 +350,7 @@ pub fn transfer_mint_authority<'a>(
 
 pub fn assert_rent_exempt(rent: &Rent, account_info: &AccountInfo) -> ProgramResult {
     if !rent.is_exempt(account_info.lamports(), account_info.data_len()) {
-        Err(MetadataError::NotRentExempt.into())
+        Err(StoreError::NotRentExempt.into())
     } else {
         Ok(())
     }
@@ -370,7 +370,7 @@ pub fn assert_edition_valid(
     ];
     let (edition_key, _) = Pubkey::find_program_address(edition_seeds, program_id);
     if edition_key != *edition_account_info.key {
-        return Err(MetadataError::InvalidEditionKey.into());
+        return Err(StoreError::InvalidEditionKey.into());
     }
 
     Ok(())
@@ -393,13 +393,13 @@ pub fn extract_edition_number_from_deprecated_reservation_list(
                 offset = Some(
                     prev_total_offsets
                         .checked_add(reservation.spots_remaining)
-                        .ok_or(MetadataError::NumericalOverflowError)?,
+                        .ok_or(StoreError::NumericalOverflowError)?,
                 );
                 // You get your editions in reverse order but who cares, saves a byte
                 reservation.spots_remaining = reservation
                     .spots_remaining
                     .checked_sub(1)
-                    .ok_or(MetadataError::NumericalOverflowError)?;
+                    .ok_or(StoreError::NumericalOverflowError)?;
 
                 reservation_list.set_reservations(reservations)?;
                 reservation_list.save(account)?;
@@ -414,20 +414,20 @@ pub fn extract_edition_number_from_deprecated_reservation_list(
             } else {
                 prev_total_offsets = prev_total_offsets
                     .checked_add(reservation.total_spots)
-                    .ok_or(MetadataError::NumericalOverflowError)?;
+                    .ok_or(StoreError::NumericalOverflowError)?;
             }
         }
 
         match offset {
             Some(val) => Ok(supply_snapshot
                 .checked_add(val)
-                .ok_or(MetadataError::NumericalOverflowError)?),
+                .ok_or(StoreError::NumericalOverflowError)?),
             None => {
-                return Err(MetadataError::AddressNotInReservation.into());
+                return Err(StoreError::AddressNotInReservation.into());
             }
         }
     } else {
-        return Err(MetadataError::ReservationNotSet.into());
+        return Err(StoreError::ReservationNotSet.into());
     }
 }
 
@@ -447,7 +447,7 @@ pub fn calculate_edition_number(
             } else {
                 me_supply
                     .checked_add(1)
-                    .ok_or(MetadataError::NumericalOverflowError)?
+                    .ok_or(StoreError::NumericalOverflowError)?
             }
         }
     };
@@ -495,12 +495,12 @@ pub fn calculate_supply_change<'a>(
         } else {
             new_supply = me_supply
                 .checked_add(1)
-                .ok_or(MetadataError::NumericalOverflowError)?;
+                .ok_or(StoreError::NumericalOverflowError)?;
         }
 
         if let Some(max) = get_max_supply_off_master_edition(master_edition_account_info)? {
             if new_supply > max {
-                return Err(MetadataError::MaxEditionsMintedAlready.into());
+                return Err(StoreError::MaxEditionsMintedAlready.into());
             }
         }
         // Doing old school serialization to protect CPU credits.
@@ -555,11 +555,11 @@ pub fn mint_limited_edition<'a>(
     ];
     let (edition_key, bump_seed) = Pubkey::find_program_address(edition_seeds, program_id);
     if edition_key != *new_edition_account_info.key {
-        return Err(MetadataError::InvalidEditionKey.into());
+        return Err(StoreError::InvalidEditionKey.into());
     }
 
     if reservation_list_info.is_some() && edition_override.is_some() {
-        return Err(MetadataError::InvalidOperation.into());
+        return Err(StoreError::InvalidOperation.into());
     }
 
     calculate_supply_change(
@@ -570,7 +570,7 @@ pub fn mint_limited_edition<'a>(
     )?;
 
     if mint_supply != 1 {
-        return Err(MetadataError::EditionsMustHaveExactlyOneToken.into());
+        return Err(StoreError::EditionsMustHaveExactlyOneToken.into());
     }
 
     // create the metadata the normal way...
@@ -661,7 +661,7 @@ pub fn spl_token_burn(params: TokenBurnParams<'_, '_>) -> ProgramResult {
         &[source, mint, authority, token_program],
         seeds.as_slice(),
     );
-    result.map_err(|_| MetadataError::TokenBurnFailed.into())
+    result.map_err(|_| StoreError::TokenBurnFailed.into())
 }
 
 /// TokenBurnParams
@@ -705,7 +705,7 @@ pub fn spl_token_mint_to(params: TokenMintToParams<'_, '_>) -> ProgramResult {
         &[mint, destination, authority, token_program],
         seeds.as_slice(),
     );
-    result.map_err(|_| MetadataError::TokenMintToFailed.into())
+    result.map_err(|_| StoreError::TokenMintToFailed.into())
 }
 
 /// TokenMintToParams
@@ -731,7 +731,7 @@ pub fn assert_derivation(
 ) -> Result<u8, ProgramError> {
     let (key, bump) = Pubkey::find_program_address(&path, program_id);
     if key != *account.key {
-        return Err(MetadataError::DerivedKeyInvalid.into());
+        return Err(StoreError::DerivedKeyInvalid.into());
     }
     Ok(bump)
 }
@@ -746,7 +746,7 @@ pub fn assert_signer(account_info: &AccountInfo) -> ProgramResult {
 
 pub fn assert_owned_by(account: &AccountInfo, owner: &Pubkey) -> ProgramResult {
     if account.owner != owner {
-        Err(MetadataError::IncorrectOwner.into())
+        Err(StoreError::IncorrectOwner.into())
     } else {
         Ok(())
     }
@@ -754,7 +754,7 @@ pub fn assert_owned_by(account: &AccountInfo, owner: &Pubkey) -> ProgramResult {
 
 pub fn assert_token_program_matches_package(token_program_info: &AccountInfo) -> ProgramResult {
     if *token_program_info.key != spl_token::id() {
-        return Err(MetadataError::InvalidTokenProgram.into());
+        return Err(StoreError::InvalidTokenProgram.into());
     }
 
     Ok(())
@@ -768,7 +768,7 @@ pub fn try_from_slice_checked<T: BorshDeserialize>(
     if (data[0] != data_type as u8 && data[0] != Key::Uninitialized as u8)
         || data.len() != data_size
     {
-        return Err(MetadataError::DataTypeMismatch.into());
+        return Err(StoreError::DataTypeMismatch.into());
     }
 
     let result: T = try_from_slice_unchecked(data)?;
@@ -823,7 +823,7 @@ pub fn process_create_metadata_accounts_logic(
     ];
 
     if metadata_account_info.key != &metadata_key {
-        return Err(MetadataError::InvalidMetadataKey.into());
+        return Err(StoreError::InvalidMetadataKey.into());
     }
 
     create_or_allocate_account_raw(
@@ -941,24 +941,24 @@ pub fn process_mint_new_edition_from_master_edition_via_token_logic<'a>(
         assert_signer(owner_account_info)?;
 
         if token_account.owner != *owner_account_info.key {
-            return Err(MetadataError::InvalidOwner.into());
+            return Err(StoreError::InvalidOwner.into());
         }
     }
 
     if token_account.mint != master_metadata.mint {
-        return Err(MetadataError::TokenAccountMintMismatchV2.into());
+        return Err(StoreError::TokenAccountMintMismatchV2.into());
     }
 
     if token_account.amount < 1 {
-        return Err(MetadataError::NotEnoughTokens.into());
+        return Err(StoreError::NotEnoughTokens.into());
     }
 
     if !new_metadata_account_info.data_is_empty() {
-        return Err(MetadataError::AlreadyInitialized.into());
+        return Err(StoreError::AlreadyInitialized.into());
     }
 
     if !new_edition_account_info.data_is_empty() {
-        return Err(MetadataError::AlreadyInitialized.into());
+        return Err(StoreError::AlreadyInitialized.into());
     }
 
     let edition_number = edition.checked_div(EDITION_MARKER_BIT_SIZE).unwrap();
@@ -1000,7 +1000,7 @@ pub fn process_mint_new_edition_from_master_edition_via_token_logic<'a>(
     let mut edition_marker = EditionMarker::from_account_info(edition_marker_info)?;
     edition_marker.key = Key::EditionMarker;
     if edition_marker.edition_taken(edition)? {
-        return Err(MetadataError::AlreadyInitialized.into());
+        return Err(StoreError::AlreadyInitialized.into());
     } else {
         edition_marker.insert_edition(edition)?
     }
