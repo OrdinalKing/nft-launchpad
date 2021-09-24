@@ -1,5 +1,5 @@
 [package]
-name = "spl-token-metadata"
+name = "lottery-store"
 version = "0.0.1"
 description = "Solana store Program for lottery"
 authors = ["Tadashi"]

@@ -1,14 +1,10 @@
 use {
-    crate::{
-        deprecated_instruction::{MintPrintingTokensViaTokenArgs, SetReservationListArgs},
-        state::{Creator, Data, EDITION, EDITION_MARKER_BIT_SIZE, PREFIX},
-    },
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_program::{
-        instruction::{AccountMeta, Instruction},
-        pubkey::Pubkey,
-        sysvar,
-    },
+};
+
+pub use crate::processor::{
+    mint_nft::MintNFTArgs,
+    create_store::CreateStoreArgs,
 };
 
 /// Instructions supported by the Metadata program.
@@ -25,6 +21,6 @@ pub enum StoreInstruction {
     ///   1. `[writable]` Uninitialized store account.
     ///   2. `[]` Rent sysvar
     ///   3. `[]` System account
-    MintNFT(MintStoreArgs),
+    MintNFT(MintNFTArgs),
 }
 

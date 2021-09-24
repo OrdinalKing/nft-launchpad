@@ -4,7 +4,6 @@ import {
   actions,
   findProgramAddress,
   CreateStoreArgs,
-  StringPublicKey,
   toPublicKey,
   STORE_PREFIX,
   WalletSigner,
@@ -18,7 +17,6 @@ const { createStore } = actions;
 export async function makeStore(
   connection: Connection,
   wallet: WalletSigner,
-  tokenMint: StringPublicKey,
   StoreSettings: CreateStoreArgs,
 ): Promise<{
   txid: string;
@@ -31,10 +29,10 @@ export async function makeStore(
 
   const signers: Keypair[] = [];
   const instructions: TransactionInstruction[] = [];
-  const lotteryKey = (
+  const storeKey = (
     await findProgramAddress(
-      [Buffer.from(STORE_PREFIX), toPublicKey(PROGRAM_IDS.lottery).toBuffer()],
-      toPublicKey(PROGRAM_IDS.lottery),
+      [Buffer.from(STORE_PREFIX), toPublicKey(PROGRAM_IDS.store).toBuffer()],
+      toPublicKey(PROGRAM_IDS.store),
     )
   )[0];
 
@@ -45,8 +43,7 @@ export async function makeStore(
   createStore(
     fullSettings,
     wallet.publicKey.toBase58(),
-    tokenMint,
-    lotteryKey,
+    storeKey,
     instructions,
   );
 
@@ -57,5 +54,5 @@ export async function makeStore(
     signers,
   );
 
-  return { txid, slot, store: lotteryKey };
+  return { txid, slot, store: storeKey };
 }

@@ -12,7 +12,7 @@ use {
 
 /// Errors that may be returned by the Metadata program.
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
-pub enum MetadataError {
+pub enum StoreError {
     /// Failed to unpack instruction data
     #[error("Failed to unpack instruction data")]
     InstructionUnpackError,
