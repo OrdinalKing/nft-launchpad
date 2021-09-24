@@ -1,21 +1,16 @@
-use mem::size_of;
-
 use crate::{
     errors::StoreError,
     processor::{
         NFTMeta, StoreData
     },
-    utils::{assert_derivation, assert_owned_by, create_or_allocate_account_raw},
-    PREFIX,
+    utils::{create_or_allocate_account_raw},
 };
 
 use {
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
         account_info::{next_account_info, AccountInfo},
-        clock::UnixTimestamp,
         entrypoint::ProgramResult,
-        msg,
         program_error::ProgramError,
         pubkey::Pubkey,
     },
@@ -85,7 +80,7 @@ pub fn mint_nft(
     accounts.payer,
     std::mem::size_of::<NFTMeta>() ,
     &[
-        &(*accounts.nftmeta).as_bytes(),
+        &(*accounts.nftmeta).to_bytes(),
         &[args.bump],
     ],
   )?;

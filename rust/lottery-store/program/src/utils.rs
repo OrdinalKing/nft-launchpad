@@ -9,7 +9,7 @@ use {
         },
     },
     arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs},
-    borsh::{BorshDeserialize, BorshSerialize},
+    borsh::{BorshDeserialize},
     solana_program::{
         account_info::AccountInfo,
         borsh::try_from_slice_unchecked,

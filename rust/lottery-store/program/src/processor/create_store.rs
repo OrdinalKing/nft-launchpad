@@ -1,19 +1,15 @@
-use mem::size_of;
-
 use crate::{
     errors::StoreError,
     processor::{
         StoreData, 
     },
     utils::{create_or_allocate_account_raw},
-    PREFIX,
 };
 
 use {
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
         account_info::{next_account_info, AccountInfo},
-        clock::UnixTimestamp,
         entrypoint::ProgramResult,
         msg,
         program_error::ProgramError,
@@ -75,7 +71,7 @@ pub fn create_store(
         accounts.payer,
         std::mem::size_of::<StoreData>() ,
         &[
-            &(*accounts.store_id).as_bytes(),
+            &(*accounts.store_id).to_bytes(),
             &[args.bump],
         ],
     )?;

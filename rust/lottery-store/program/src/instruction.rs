@@ -1,12 +1,5 @@
 use {
-    crate::{
-    },
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_program::{
-        instruction::{AccountMeta, Instruction},
-        pubkey::Pubkey,
-        sysvar,
-    },
 };
 
 pub use crate::processor::{
