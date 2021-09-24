@@ -21,7 +21,7 @@ pub fn process_instruction(
     input: &[u8],
 ) -> ProgramResult {
     use crate::instruction::StoreInstruction;
-    match 
+    match StoreInstruction::try_from_slice(input)? {
         StoreInstruction::CreateStore(args) => create_store(program_id, accounts, args),
         StoreInstruction::MintNFT(args) => mint_nft(program_id, accounts, args),
     }
