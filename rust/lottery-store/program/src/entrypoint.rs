@@ -6,7 +6,7 @@ use {
     crate::{error::StoreError, processor},
     solana_program::{
         account_info::AccountInfo, entrypoint, entrypoint::ProgramResult,
-        program_error::PrintProgramError, pubkey::Pubkey,
+        program_error::StoreError, pubkey::Pubkey,
     },
 };
 
@@ -18,7 +18,7 @@ fn process_instruction<'a>(
 ) -> ProgramResult {
     if let Err(error) = processor::process_instruction(program_id, accounts, instruction_data) {
         // catch the error so we can print it
-        error.print::<PrintProgramError>();
+        error.print::<StoreError>();
         return Err(error);
     }
     Ok(())
