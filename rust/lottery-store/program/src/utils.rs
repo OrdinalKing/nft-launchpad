@@ -1,6 +1,6 @@
 use {
     crate::{
-        error::StoreError,
+        errors::StoreError,
         state::{
             get_reservation_list, Data, EditionMarker, Key, MasterEditionV1, Metadata, EDITION,
             EDITION_MARKER_BIT_SIZE, MAX_CREATOR_LIMIT, MAX_EDITION_LEN, MAX_EDITION_MARKER_SIZE,
