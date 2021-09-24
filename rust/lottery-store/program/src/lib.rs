@@ -10,4 +10,4 @@ pub use solana_program;
 
 pub const PREFIX: &str = "store";
 
-solana_program::declare_id!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+solana_program::declare_id!("C5qPBBJfLWRgwc1TfagihB6kuMnQDZt6S7mTDXHj2umR");

@@ -1,6 +1,5 @@
 import {
   AccountInfo,
-  Keypair,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
@@ -237,7 +236,9 @@ export async function createStore(
 export async function mintNFT(
   settings: MintNFTArgs,
   creator: StringPublicKey,
+  nftmeta: StringPublicKey,
   authority: StringPublicKey,
+  storeid: StringPublicKey,
   tokenMint: StringPublicKey,
   tokenPoolKey: StringPublicKey,
   instructions: TransactionInstruction[],
@@ -247,13 +248,6 @@ export async function mintNFT(
 
   const data = Buffer.from(serialize(MINT_NFT_SCHEMA, settings));
 
-  const storeKey: StringPublicKey = (
-    await findProgramAddress(
-      [Buffer.from(STORE_PREFIX), toPublicKey(storeProgramId).toBuffer()],
-      toPublicKey(storeProgramId),
-    )
-  )[0];
-  const keypair = new Keypair();
   const keys = [
     {
       pubkey: toPublicKey(creator),
@@ -261,9 +255,9 @@ export async function mintNFT(
       isWritable: true,
     },
     {
-      pubkey: toPublicKey(keypair.publicKey.toString()),
+      pubkey: toPublicKey(nftmeta),
       isSigner: false,
-      isWritable: false,
+      isWritable: true,
     },
     {
       pubkey: toPublicKey(authority),
@@ -271,7 +265,7 @@ export async function mintNFT(
       isWritable: false,
     },
     {
-      pubkey: toPublicKey(storeKey),
+      pubkey: toPublicKey(storeid),
       isSigner: false,
       isWritable: true,
     },

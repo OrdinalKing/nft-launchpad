@@ -84,7 +84,10 @@ export async function mintNFTStore(
     account,
   );
 
+  const keypair = new Keypair();
+
   signers.push(tokenPoolAccount);
+  signers.push(keypair);
 
   const fullSettings = new MintNFTArgs({
     ...mintNFTSetting,
@@ -93,13 +96,13 @@ export async function mintNFTStore(
   await mintNFT(
     fullSettings,
     wallet.publicKey.toBase58(),
+    keypair.publicKey.toBase58(),
+    storeid,
     storeid,
     account.toBase58(),
     tokenPoolAccount.publicKey.toBase58(),
     instructions,
   );
-
-  console.log(account.toBase58());
 
   const { txid, slot } = await sendTransactionWithRetry(
     connection,
