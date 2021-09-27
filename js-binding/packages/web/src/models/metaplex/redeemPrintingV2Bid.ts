@@ -141,7 +141,7 @@ export async function redeemPrintingV2Bid(
       isWritable: false,
     },
     {
-      pubkey: store,
+      pubkey: toPublicKey(store),
       isSigner: false,
       isWritable: false,
     },

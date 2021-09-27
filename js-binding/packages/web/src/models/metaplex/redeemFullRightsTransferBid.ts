@@ -147,7 +147,7 @@ export async function redeemFullRightsTransferBid(
       isWritable: false,
     },
     {
-      pubkey: store,
+      pubkey: toPublicKey(store),
       isSigner: false,
       isWritable: false,
     },

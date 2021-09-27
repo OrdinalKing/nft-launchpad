@@ -1,4 +1,10 @@
-import { programIds, cache, ParsedAccount, METAPLEX_ID } from '@oyster/common';
+import {
+  programIds,
+  cache,
+  ParsedAccount,
+  METAPLEX_ID,
+  toPublicKey,
+} from '@oyster/common';
 import { AccountInfo, PublicKey } from '@solana/web3.js';
 import {
   AuctionManagerV2,
@@ -40,7 +46,7 @@ export const processMetaplexAccounts: ProcessAccountsFunc = async (
     ) {
       const storeKey = new PublicKey(account.data.slice(1, 33));
 
-      if ((STORE_ID && storeKey.equals(STORE_ID)) || useAll) {
+      if ((STORE_ID && storeKey.equals(toPublicKey(STORE_ID))) || useAll) {
         const auctionManager = decodeAuctionManager(account.data);
 
         const parsedAccount: ParsedAccount<
@@ -109,7 +115,7 @@ export const processMetaplexAccounts: ProcessAccountsFunc = async (
         account,
         info: store,
       };
-      if (STORE_ID && pubkey === STORE_ID.toBase58()) {
+      if (STORE_ID && pubkey === STORE_ID) {
         setter('store', pubkey, parsedAccount);
       }
       setter('stores', pubkey, parsedAccount);

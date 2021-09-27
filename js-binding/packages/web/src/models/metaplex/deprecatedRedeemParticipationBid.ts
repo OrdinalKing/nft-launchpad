@@ -119,7 +119,7 @@ export async function deprecatedRedeemParticipationBid(
       isWritable: false,
     },
     {
-      pubkey: store,
+      pubkey: toPublicKey(store),
       isSigner: false,
       isWritable: false,
     },
