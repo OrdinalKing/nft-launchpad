@@ -8,7 +8,7 @@ import { programIds } from '../utils/programIds';
 import { deserializeUnchecked, serialize } from 'borsh';
 import BN from 'bn.js';
 import { AccountParser } from '../contexts';
-import { findProgramAddress, StringPublicKey, toPublicKey } from '../utils';
+import { StringPublicKey, toPublicKey } from '../utils';
 // import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 export const STORE_PREFIX = 'store';
@@ -157,7 +157,7 @@ export const MINT_NFT_SCHEMA = new Map<any, any>([
     },
   ],
   [
-    StoreData,
+    NFTMeta,
     {
       kind: 'struct',
       fields: [
@@ -178,23 +178,20 @@ export const MINT_NFT_SCHEMA = new Map<any, any>([
 export const decodeStoreData = (buffer: Buffer) => {
   return deserializeUnchecked(STORE_SCHEMA, StoreData, buffer) as StoreData;
 };
+export const decodeNFTMetaData = (buffer: Buffer) => {
+  return deserializeUnchecked(MINT_NFT_SCHEMA, NFTMeta, buffer) as NFTMeta;
+};
 
 export async function createStore(
   settings: CreateStoreArgs,
   creator: StringPublicKey,
+  storeid: StringPublicKey,
   authority: StringPublicKey,
   instructions: TransactionInstruction[],
 ) {
   const storeProgramId = programIds().store;
 
   const data = Buffer.from(serialize(STORE_SCHEMA, settings));
-
-  const storeKey: StringPublicKey = (
-    await findProgramAddress(
-      [Buffer.from(STORE_PREFIX), toPublicKey(storeProgramId).toBuffer()],
-      toPublicKey(storeProgramId),
-    )
-  )[0];
 
   const keys = [
     {
@@ -203,7 +200,7 @@ export async function createStore(
       isWritable: true,
     },
     {
-      pubkey: toPublicKey(storeKey),
+      pubkey: toPublicKey(storeid),
       isSigner: false,
       isWritable: true,
     },
