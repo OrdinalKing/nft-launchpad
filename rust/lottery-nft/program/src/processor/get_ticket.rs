@@ -10,6 +10,7 @@ use crate::{
     utils::{
         assert_derivation, assert_initialized, assert_owned_by, assert_signer,
         assert_token_program_matches_package, create_or_allocate_account_raw, spl_token_transfer,
+        carryout_lotter,
         TokenTransferParams,
     },
     PREFIX,
@@ -112,7 +113,7 @@ pub fn get_ticket<'r, 'b: 'r>(
         accounts.bidder.key.as_ref(),
     ];
 
-    // Transfer amount of SPL token to bid account.
+    // Transfer amount of SPL token
     spl_token_transfer(TokenTransferParams {
         source: accounts.bidder_token.clone(),
         destination: accounts.pool_token.clone(),
@@ -122,10 +123,16 @@ pub fn get_ticket<'r, 'b: 'r>(
         amount: lottery.ticket_price,
     })?;
 
-    let ticket_number = 0;
-    let state = TicketState::buy().win()?;
-    
+    let winned_nft_num = carryout_lotter(&mut lottery, clock.unix_timestamp as u64, *accounts.ticket.key);
+    let mut ticket_state = TicketState::buy();
 
+    if winned_nft_num == 0 {
+        ticket_state = ticket_state.fail()?;
+    }
+    else {
+        ticket_state = ticket_state.win()?;
+    }
+    
     let ticket_seeds = [
         PREFIX.as_bytes(),
         program_id.as_ref(),
@@ -154,8 +161,8 @@ pub fn get_ticket<'r, 'b: 'r>(
         )?;
         let mut ticket = Ticket{
             owner:*accounts.bidder.key,
-            state:state,
-            ticket_number:ticket_number
+            state:ticket_state,
+            winned_nft_number:winned_nft_num
         }
         .serialize(&mut *accounts.ticket.data.borrow_mut())?;
     }

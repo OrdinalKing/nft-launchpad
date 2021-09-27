@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./project-details.module.css";
+const {userAccounts, accountByMint} = useUserAccounts();
 
 const ProjectDetails = () => {
   return (

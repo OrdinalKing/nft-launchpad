@@ -13,6 +13,7 @@ import {
   CreateLotteryArgs,
   toPublicKey,
   programIds,
+  useUserAccounts,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
@@ -23,7 +24,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 
 export const CreateLotteryNFTView = () => {
   const [form] = Form.useForm();
-
+  
   const connection = useConnection();
   const wallet = useWallet();
   const mint = useMint(QUOTE_MINT);

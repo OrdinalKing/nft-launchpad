@@ -17,6 +17,7 @@ import {
 import BN from 'bn.js';
 import { WAD, ZERO } from '../constants';
 import { TokenInfo } from '@solana/spl-token-registry';
+import { initializeAccount } from '@project-serum/serum/lib/token-instructions';
 
 export type KnownTokenMap = Map<string, TokenInfo>;
 
@@ -355,4 +356,76 @@ export async function createSPLTokenKeypair(
     AccountLayout.span,
   );
   return newTokenKeypair;
+}
+export async function createTokenAccountIfNotExist(
+  connection: Connection,
+  account: string | undefined | null,
+  owner: PublicKey,
+  mintAddress: string,
+  lamports: number | null,
+  instructions: TransactionInstruction[],
+  signer: Array<Keypair>,
+) {
+  let publicKey;
+
+  if (account) {
+    publicKey = new PublicKey(account);
+  } else {
+    publicKey = await createProgramAccountIfNotExist(
+      connection,
+      account,
+      owner,
+      TOKEN_PROGRAM_ID,
+      lamports,
+      AccountLayout,
+      instructions,
+      signer,
+    );
+
+    instructions.push(
+      initializeAccount({
+        account: publicKey,
+        mint: new PublicKey(mintAddress),
+        owner,
+      }),
+    );
+  }
+
+  return publicKey;
+}
+export async function createProgramAccountIfNotExist(
+  connection: Connection,
+  account: string | undefined | null,
+  owner: PublicKey,
+  programId: PublicKey,
+  lamports: number | null,
+  layout: any,
+
+  instructions: TransactionInstruction[],
+  signer: Array<Keypair>,
+) {
+  let publicKey;
+
+  if (account) {
+    publicKey = new PublicKey(account);
+  } else {
+    const newAccount = new Keypair();
+    publicKey = newAccount.publicKey;
+
+    instructions.push(
+      SystemProgram.createAccount({
+        fromPubkey: owner,
+        newAccountPubkey: publicKey,
+        lamports:
+          lamports ??
+          (await connection.getMinimumBalanceForRentExemption(layout.span)),
+        space: layout.span,
+        programId,
+      }),
+    );
+
+    signer.push(newAccount);
+  }
+
+  return publicKey;
 }

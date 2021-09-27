@@ -1,7 +1,13 @@
 use solana_program::program_pack::IsInitialized;
 
 use {
-    crate::errors::LotteryError,
+    
+    crate::{
+        errors::LotteryError,
+        processor::{
+            LotteryData
+        },
+    },
     solana_program::{
         account_info::AccountInfo,
         entrypoint::ProgramResult,
@@ -14,6 +20,8 @@ use {
         sysvar::{rent::Rent, Sysvar},
     },
     std::convert::TryInto,
+    std::hash::{Hash, Hasher},
+    std::collections::hash_map::DefaultHasher,
 };
 
 pub fn assert_initialized<T: Pack + IsInitialized>(
@@ -226,4 +234,26 @@ pub fn spl_token_create_account(params: TokenCreateAccount<'_,'_>) -> ProgramRes
     )?;
 
     Ok(())
+}
+
+pub fn carryout_lotter(lottery_data:&mut LotteryData,cur_timestamp:u64, ticket_pubkey:Pubkey)->u64{
+    
+    let lotter_num = get_random(cur_timestamp, ticket_pubkey) % lottery_data.ticket_amount + 1;
+
+    if lotter_num <= lottery_data.nft_amount && lottery_data.sold_amount < lottery_data.nft_amount {//win
+        lottery_data.sold_amount += 1;
+        let winned_nft_num = lottery_data.sold_amount;
+        winned_nft_num
+    }
+    else {//fail
+        0
+    }
+
+}
+pub fn get_random(cur_timestamp:u64, ticket_pubkey:Pubkey)->u64{
+    let mut hasher1 = DefaultHasher::new(); 
+    ticket_pubkey.hash(&mut hasher1);
+    let determine_num = hasher1.finish()+cur_timestamp;
+
+    return determine_num;
 }

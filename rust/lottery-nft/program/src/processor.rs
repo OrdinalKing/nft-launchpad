@@ -45,7 +45,7 @@ pub fn process_instruction(
 pub struct Ticket {
     pub owner: Pubkey,
     pub state: TicketState,
-    pub ticket_number: u64
+    pub winned_nft_number: u64
 }
 
 #[repr(C)]

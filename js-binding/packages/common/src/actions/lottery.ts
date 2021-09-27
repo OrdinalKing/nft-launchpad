@@ -28,11 +28,17 @@ export enum TicketState {
 }
 
 export class Ticket {
-  wallet: StringPublicKey;
+  owner: StringPublicKey;
   state: TicketState;
-  constructor(args: { wallet: StringPublicKey; state: TicketState }) {
-    this.wallet = args.wallet;
+  winnedNFTNumber: BN;
+  constructor(args: {
+    owner: StringPublicKey;
+    state: TicketState;
+    winnedNFTNumber: BN;
+  }) {
+    this.owner = args.owner;
     this.state = args.state;
+    this.winnedNFTNumber = args.winnedNFTNumber;
   }
 }
 
@@ -52,8 +58,6 @@ export const decodeLottery = (buffer: Buffer) => {
     buffer,
   ) as LotteryData;
 };
-
-export const BASE_LOTTERY_DATA_SIZE = 32 + 32 + 32 + 32 + 8 + 8 + 1 + 8 + 8 + 8;
 
 export interface LotteryCountdownState {
   days: number;
@@ -83,8 +87,8 @@ export class LotteryData {
   ticketPrice: BN;
   /// existing ticket amount
   ticketAmount: BN;
-  /// current bought tickets
-  currentTickets: Ticket[];
+  /// existing ticket amount
+  soldAmount: BN;
 
   public timeToEnd(): LotteryCountdownState {
     const now = moment().unix();
@@ -131,7 +135,7 @@ export class LotteryData {
     nftAmount: BN;
     ticketPrice: BN;
     ticketAmount: BN;
-    currentTickets: Ticket[];
+    soldAmount: BN;
   }) {
     this.authority = args.authority;
     this.tokenMint = args.tokenMint;
@@ -143,7 +147,7 @@ export class LotteryData {
     this.nftAmount = args.nftAmount;
     this.ticketPrice = args.ticketPrice;
     this.ticketAmount = args.ticketAmount;
-    this.currentTickets = args.currentTickets;
+    this.soldAmount = args.soldAmount;
   }
 }
 
@@ -200,7 +204,7 @@ export const LOTTERY_SCHEMA = new Map<any, any>([
         ['nftAmount', 'u64'],
         ['ticketPrice', 'u64'],
         ['ticketAmount', 'u64'],
-        ['currentTickets', [Ticket]],
+        ['soldAmount', 'u64'],
       ],
     },
   ],
@@ -209,8 +213,9 @@ export const LOTTERY_SCHEMA = new Map<any, any>([
     {
       kind: 'struct',
       fields: [
-        ['wallet', 'pubkeyAsString'],
+        ['owner', 'pubkeyAsString'],
         ['state', 'u8'],
+        ['winnedNFTAmount', 'u64'],
       ],
     },
   ],
@@ -387,33 +392,28 @@ export async function setLotteryAuthority(
 }
 
 export async function getTicket(
+  ticket: StringPublicKey,
   bidderPubkey: StringPublicKey,
   bidderTokenPubkey: StringPublicKey,
   poolTokenPubkey: StringPublicKey,
   tokenMintPubkey: StringPublicKey,
   transferAuthority: StringPublicKey,
-  lotteryStore: StringPublicKey,
+  lottery: StringPublicKey,
   instructions: TransactionInstruction[],
 ) {
   const lotteryProgramId = programIds().lottery;
 
   const data = Buffer.from([3]);
 
-  const lotteryKey: StringPublicKey = (
-    await findProgramAddress(
-      [
-        Buffer.from(LOTTERY_PREFIX),
-        toPublicKey(lotteryProgramId).toBuffer(),
-        toPublicKey(lotteryStore).toBuffer(),
-      ],
-      toPublicKey(lotteryProgramId),
-    )
-  )[0];
-
   const keys = [
     {
-      pubkey: toPublicKey(lotteryKey),
+      pubkey: toPublicKey(lottery),
       isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(ticket),
+      isSigner: true,
       isWritable: true,
     },
     {
@@ -443,6 +443,16 @@ export async function getTicket(
     },
     {
       pubkey: programIds().token,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: SYSVAR_RENT_PUBKEY,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: SystemProgram.programId,
       isSigner: false,
       isWritable: false,
     },
