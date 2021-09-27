@@ -308,19 +308,19 @@ pub enum StoreError {
     ReservationArrayShouldBeSizeOne,
 }
 
-impl PrintProgramError for MetadataError {
+impl PrintProgramError for StoreError {
     fn print<E>(&self) {
         msg!(&self.to_string());
     }
 }
 
-impl From<MetadataError> for ProgramError {
-    fn from(e: MetadataError) -> Self {
+impl From<StoreError> for ProgramError {
+    fn from(e: StoreError) -> Self {
         ProgramError::Custom(e as u32)
     }
 }
 
-impl<T> DecodeError<T> for MetadataError {
+impl<T> DecodeError<T> for StoreError {
     fn type_of() -> &'static str {
         "Metadata Error"
     }

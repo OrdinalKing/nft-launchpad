@@ -148,7 +148,7 @@ export async function redeemParticipationBidV3(
       isWritable: false,
     },
     {
-      pubkey: store,
+      pubkey: toPublicKey(store),
       isSigner: false,
       isWritable: false,
     },

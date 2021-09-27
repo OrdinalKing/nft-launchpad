@@ -7,5 +7,5 @@ export { AuctionView } from './auction';
 export { AuctionCreateView } from './auctionCreate';
 export { ArtworksView } from './artworks';
 export { AnalyticsView } from './analytics';
-export { JoinRaffleView } from './JoinRaffle';
+export { JoinRaffleView } from './joinraffle';
 

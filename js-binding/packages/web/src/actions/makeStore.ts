@@ -5,7 +5,6 @@ import {
   findProgramAddress,
   CreateStoreArgs,
   toPublicKey,
-  STORE_PREFIX,
   WalletSigner,
   sendTransactionWithRetry,
 } from '@oyster/common';
@@ -17,7 +16,6 @@ const { createStore } = actions;
 export async function makeStore(
   connection: Connection,
   wallet: WalletSigner,
-  StoreSettings: CreateStoreArgs,
 ): Promise<{
   txid: string;
   slot: number;
@@ -29,21 +27,22 @@ export async function makeStore(
 
   const signers: Keypair[] = [];
   const instructions: TransactionInstruction[] = [];
-  const storeKey = (
-    await findProgramAddress(
-      [Buffer.from(STORE_PREFIX), toPublicKey(PROGRAM_IDS.store).toBuffer()],
-      toPublicKey(PROGRAM_IDS.store),
-    )
-  )[0];
+  const storeKey = new Keypair();
+
+  const [authority, nonce] = await findProgramAddress(
+    [storeKey.publicKey.toBuffer()],
+    toPublicKey(PROGRAM_IDS.store),
+  );
 
   const fullSettings = new CreateStoreArgs({
-    ...StoreSettings,
+    bump: nonce,
   });
 
   createStore(
     fullSettings,
     wallet.publicKey.toBase58(),
-    storeKey,
+    storeKey.publicKey.toBase58(),
+    authority,
     instructions,
   );
 
@@ -54,5 +53,5 @@ export async function makeStore(
     signers,
   );
 
-  return { txid, slot, store: storeKey };
+  return { txid, slot, store: storeKey.publicKey.toBase58() };
 }

@@ -125,7 +125,7 @@ export async function deprecatedPopulateParticipationPrintingAccount(
       isWritable: false,
     },
     {
-      pubkey: store,
+      pubkey: toPublicKey(store),
       isSigner: false,
       isWritable: false,
     },

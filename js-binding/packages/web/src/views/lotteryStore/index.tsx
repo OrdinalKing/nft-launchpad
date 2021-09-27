@@ -10,7 +10,6 @@ import { QUOTE_MINT } from './../../constants';
 import {
   useConnection,
   useMint,
-  CreateStoreArgs,
   toPublicKey,
   programIds,
   MintNFTArgs,
@@ -41,15 +40,10 @@ export const CreateLotteryStoreView = () => {
     const storeProgramId = programIds().store;
     const STORE_PREFIX = 'store';
 
-    let [, nonce] = await PublicKey.findProgramAddress(
-      [Buffer.from(STORE_PREFIX), toPublicKey(storeProgramId).toBuffer()],
-      toPublicKey(storeProgramId),
-    ); 
-
-    makeStore(connection, wallet, new CreateStoreArgs({
-      bump: nonce,
-    })).then(({txid,slot,store})=>{
+    
+    makeStore(connection, wallet).then(({txid,slot,store})=>{
       console.log(txid);
+      console.log(slot);
       storeid = store;
     }).catch((reason)=>{ 
       console.log(reason)

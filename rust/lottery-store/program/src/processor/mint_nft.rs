@@ -40,7 +40,6 @@ pub struct MintNFTArgs {
   /// URI pointing to JSON representing the asset
   pub uri: String,
   /// Pubkey for mint address
-  /// 
   pub bump: u8,
 }
 
@@ -70,7 +69,6 @@ pub fn mint_nft(
 ) -> ProgramResult {
   let accounts = parse_accounts(program_id, accounts)?;
 
-
   create_or_allocate_account_raw(
     *program_id,
     accounts.nftmeta,
@@ -79,7 +77,7 @@ pub fn mint_nft(
     accounts.payer,
     std::mem::size_of::<NFTMeta>() ,
     &[
-        &(*accounts.nftmeta).to_bytes(),
+        &(*accounts.nftmeta.key).to_bytes(),
         &[args.bump],
     ],
   )?;
