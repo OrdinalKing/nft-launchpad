@@ -518,7 +518,7 @@ async function setupAuctionManagerInstructions(
 }> {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
-  const store = programIds().store?.toBase58();
+  const store = programIds().store;
   if (!store) {
     throw new Error('Store not initialized');
   }
@@ -594,7 +594,7 @@ async function deprecatedValidateParticipationHelper(
 ): Promise<{ instructions: TransactionInstruction[]; signers: Keypair[] }> {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
-  const store = programIds().store?.toBase58();
+  const store = programIds().store;
   if (!store) {
     throw new Error('Store not initialized');
   }
@@ -680,7 +680,7 @@ async function validateBoxes(
 }> {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
-  const store = programIds().store?.toBase58();
+  const store = programIds().store;
   if (!store) {
     throw new Error('Store not initialized');
   }
