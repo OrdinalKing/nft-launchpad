@@ -62,26 +62,27 @@ pub fn create_store(
     // ************
     
     // Create store
-    create_or_allocate_account_raw(
-        *program_id,
-        accounts.store_id,
-        accounts.rent,
-        accounts.system,
-        accounts.payer,
-        std::mem::size_of::<StoreData>() ,
-        &[
-            &(*accounts.store_id.key).to_bytes(),
-            &[args.bump],
-        ],
-    )?;
+    if accounts.store_id.data_is_empty() {
+        create_or_allocate_account_raw(
+            *program_id,
+            accounts.store_id,
+            accounts.rent,
+            accounts.system,
+            accounts.payer,
+            std::mem::size_of::<StoreData>() ,
+            &[
+                &(*accounts.store_id.key).to_bytes(),
+                &[args.bump],
+            ],
+        )?;
 
-    // Configure Store.
-    StoreData {
-        authority: *accounts.authority.key,
-        nft_amount: 0,
-        bump: args.bump,
+        // Configure Store.
+        StoreData {
+            authority: *accounts.authority.key,
+            nft_amount: 0,
+            bump: args.bump,
+        }
+        .serialize(&mut *accounts.store_id.data.borrow_mut())?;
     }
-    .serialize(&mut *accounts.store_id.data.borrow_mut())?;
-    
     Ok(())
 }
