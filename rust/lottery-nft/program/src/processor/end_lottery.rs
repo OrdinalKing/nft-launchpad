@@ -11,14 +11,13 @@ use {
         account_info::{next_account_info, AccountInfo},
         clock::Clock,
         entrypoint::ProgramResult,
-        hash, msg,
+        msg,
         program_error::ProgramError,
         pubkey::Pubkey,
         sysvar::Sysvar,
     },
     std::mem,
 };
-
 
 struct Accounts<'a, 'b: 'a> {
     authority: &'a AccountInfo<'b>,
@@ -41,14 +40,44 @@ fn parse_accounts<'a, 'b: 'a>(
     Ok(accounts)
 }
 
+
 pub fn end_lottery<'a, 'b: 'a>(
     program_id: &Pubkey,
     accounts: &'a [AccountInfo<'b>],
 ) -> ProgramResult {
-    msg!("+ Processing EndLottery");
+    msg!("+ Starting EndLottery");
     let accounts = parse_accounts(program_id, accounts)?;
     let clock = Clock::from_account_info(accounts.clock_sysvar)?;
 
-    
+    let mut lottery = LotteryData::from_account_info(accounts.lottery)?;
+
+    // Derive lottery address so we can make the modifications necessary to start it.
+    assert_derivation(
+        program_id,
+        accounts.lottery,
+        &[
+            PREFIX.as_bytes(),
+            program_id.as_ref(),
+            lottery.lottery_store_id.as_ref(),
+        ],
+    )?;
+
+    // Check authority is correct.
+    if lottery.authority != *accounts.authority.key {
+        return Err(LotteryError::InvalidAuthority.into());
+    }
+
+    let cur_timestamp = clock.unix_timestamp as u64;
+    if lottery.state == LotteryState::Ended {
+        return Err(LotteryError::AlreadyEnded.into());
+    }
+
+    LotteryData {
+        state: lottery.state.end()?,
+        ended_at: cur_timestamp,
+        ..lottery
+    }
+    .serialize(&mut *accounts.lottery.data.borrow_mut())?;
+
     Ok(())
 }

@@ -159,7 +159,7 @@ pub fn get_ticket<'r, 'b: 'r>(
                 &[ticket_bump],
             ],
         )?;
-        let mut ticket = Ticket{
+        Ticket{
             owner:*accounts.bidder.key,
             state:ticket_state,
             winned_nft_number:winned_nft_num

@@ -8,7 +8,8 @@ use solana_program::{
 use std::{cell::Ref, cmp, mem};
 
 // Declare submodules, each contains a single handler for each instruction variant in the program.
-pub mod claim;
+pub mod claim_nft;
+pub mod claim_token;
 pub mod create_lottery;
 pub mod end_lottery;
 pub mod get_ticket;
@@ -16,7 +17,8 @@ pub mod set_authority;
 pub mod start_lottery;
 
 // Re-export submodules handlers + associated types for other programs to consume.
-pub use claim::*;
+pub use claim_nft::*;
+pub use claim_token::*;
 pub use create_lottery::*;
 pub use end_lottery::*;
 pub use get_ticket::*;
@@ -30,7 +32,8 @@ pub fn process_instruction(
 ) -> ProgramResult {
     use crate::instruction::LotteryInstruction;
     match LotteryInstruction::try_from_slice(input)? {
-        LotteryInstruction::Claim => claim(program_id, accounts),
+        LotteryInstruction::ClaimNFT => claim_nft(program_id, accounts),
+        LotteryInstruction::ClaimToken => claim_token(program_id, accounts),
         LotteryInstruction::CreateLottery(args) => create_lottery(program_id, accounts, args),
         LotteryInstruction::EndLottery => end_lottery(program_id, accounts),
         LotteryInstruction::GetTicket => get_ticket(program_id, accounts),
@@ -46,6 +49,14 @@ pub struct Ticket {
     pub owner: Pubkey,
     pub state: TicketState,
     pub winned_nft_number: u64
+}
+
+impl Ticket {
+    pub fn from_account_info(a: &AccountInfo) -> Result<Ticket, ProgramError> {
+        let ticket: Ticket = try_from_slice_unchecked(&a.data.borrow_mut())?;
+
+        Ok(ticket)
+    }
 }
 
 #[repr(C)]

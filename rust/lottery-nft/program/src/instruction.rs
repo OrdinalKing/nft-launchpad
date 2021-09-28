@@ -48,7 +48,7 @@ pub enum LotteryInstruction {
     /// Ends an lottery, regardless of end timing conditions
     EndLottery,
 
-    /// Move SPL tokens from winning bid to the destination account.
+    /// Move NFT from winning bid to the destination account.
     ///   0. `[writable]` The destination account
     ///   1. `[writable]` The bidder pot token account
     ///   2. `[]` The bidder pot pda account [seed of ['lottery', program_id, lottery key, bidder key]]
@@ -58,5 +58,17 @@ pub enum LotteryInstruction {
     ///   6. `[]` Token mint of the lottery
     ///   7. `[]` Clock sysvar
     ///   8. `[]` Token program
-    Claim,
+    ClaimNFT,
+
+    /// Move SOL from not winning bid to the destination account.
+    ///   0. `[writable]` The destination account
+    ///   1. `[writable]` The bidder pot token account
+    ///   2. `[]` The bidder pot pda account [seed of ['lottery', program_id, lottery key, bidder key]]
+    ///   3. `[signer]` The authority on the lottery
+    ///   4. `[]` The lottery
+    ///   5. `[]` The bidder wallet
+    ///   6. `[]` Token mint of the lottery
+    ///   7. `[]` Clock sysvar
+    ///   8. `[]` Token program
+    ClaimToken,
 }

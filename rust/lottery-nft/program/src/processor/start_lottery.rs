@@ -49,7 +49,6 @@ pub fn start_lottery<'a, 'b: 'a>(
     let accounts = parse_accounts(program_id, accounts)?;
     let clock = Clock::from_account_info(accounts.clock_sysvar)?;
 
-    // Initialise a new lottery. The end time is calculated relative to now.
     let mut lottery = LotteryData::from_account_info(accounts.lottery)?;
 
     // Derive lottery address so we can make the modifications necessary to start it.

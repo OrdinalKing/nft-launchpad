@@ -150,6 +150,14 @@ pub enum LotteryError {
     /// Invalid token pool address
     #[error("Invalid token pool address")]
     InvalidTokenPool,
+
+    /// This lottery already ended
+    #[error("This lottery already ended")]
+    AlreadyEnded,
+
+    /// already claimed
+    #[error("Already Claimed")]
+    AlreadyClaimed,
 }
 
 impl PrintProgramError for LotteryError {
