@@ -74,7 +74,7 @@ export const LOTTERY_ID =
   '7A897bC18j2bbEwGVJ8PzgLXYNkxovUuNn43N7JfVuet' as StringPublicKey;
 
 export const STORE_ID =
-  'C5qPBBJfLWRgwc1TfagihB6kuMnQDZt6S7mTDXHj2umR' as StringPublicKey;
+  '7Dja7mhqrpZDTUFGDCrnTZyqmLFxXSmuaW2zLPMjaAh' as StringPublicKey;
 
 export const METAPLEX_ID =
   'p1exdMJcjVao65QdewkaZRUnU6VPSXhus9n2GzWfh98' as StringPublicKey;

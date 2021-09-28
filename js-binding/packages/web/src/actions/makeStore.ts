@@ -38,13 +38,15 @@ export async function makeStore(
     bump: nonce,
   });
 
-  createStore(
+  await createStore(
     fullSettings,
     wallet.publicKey.toBase58(),
     storeKey.publicKey.toBase58(),
     authority,
     instructions,
   );
+
+  signers.push(storeKey);
 
   const { txid, slot } = await sendTransactionWithRetry(
     connection,

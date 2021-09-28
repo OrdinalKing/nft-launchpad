@@ -192,7 +192,7 @@ export async function createStore(
   const storeProgramId = programIds().store;
 
   const data = Buffer.from(serialize(STORE_SCHEMA, settings));
-
+  console.log(storeid);
   const keys = [
     {
       pubkey: toPublicKey(creator),
@@ -201,13 +201,13 @@ export async function createStore(
     },
     {
       pubkey: toPublicKey(storeid),
-      isSigner: false,
+      isSigner: true,
       isWritable: true,
     },
     {
       pubkey: toPublicKey(authority),
       isSigner: false,
-      isWritable: false,
+      isWritable: true,
     },
     {
       pubkey: SYSVAR_RENT_PUBKEY,
