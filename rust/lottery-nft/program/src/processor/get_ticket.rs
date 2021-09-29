@@ -106,19 +106,27 @@ pub fn get_ticket<'r, 'b: 'r>(
     if lottery.state != LotteryState::Started {
         return Err(LotteryError::InvalidState.into());
     }
-    let bump_authority_seeds = &[
+    let token_authority_seeds = &[
         PREFIX.as_bytes(),
         program_id.as_ref(),
         accounts.lottery.key.as_ref(),
         accounts.bidder.key.as_ref(),
     ];
 
+    let (token_authority, token_bump) = Pubkey::find_program_address(token_authority_seeds, program_id);
+
     // Transfer amount of SPL token
     spl_token_transfer(TokenTransferParams {
         source: accounts.bidder_token.clone(),
         destination: accounts.pool_token.clone(),
         authority: accounts.transfer_authority.clone(),
-        authority_signer_seeds: bump_authority_seeds,
+        authority_signer_seeds: &[
+            PREFIX.as_bytes(),
+            program_id.as_ref(),
+            accounts.lottery.key.as_ref(),
+            accounts.bidder.key.as_ref(),
+            &[token_bump],
+        ],
         token_program: accounts.token_program.clone(),
         amount: lottery.ticket_price,
     })?;
