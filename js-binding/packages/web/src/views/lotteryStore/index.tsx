@@ -33,12 +33,9 @@ export const CreateLotteryStoreView = () => {
   const [nftname, setNFTName] = useState('');
   const [nftsymbol, setNFTSymbol] = useState('');
 
-  const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-
   async function createStore() {
     let storeid = '';
     const storeProgramId = programIds().store;
-    const STORE_PREFIX = 'store';
 
     
     makeStore(connection, wallet).then(({txid,slot,store})=>{
@@ -52,7 +49,7 @@ export const CreateLotteryStoreView = () => {
         try{
           console.log("store id",storeid);
           setStoreID(storeid);
-          await loadAccount(connection, toPublicKey(storeid), toPublicKey(programIds().store));
+          await loadAccount(connection, toPublicKey(storeid), toPublicKey(storeProgramId));
         }
         catch(err:any){
           console.log(err);
@@ -76,7 +73,7 @@ export const CreateLotteryStoreView = () => {
     if (accountInfo === null) {
       throw new Error('Failed to find account');
     }
-  
+
     if (!accountInfo.owner.equals(programId)) {
       throw new Error(`Invalid owner: ${JSON.stringify(accountInfo.owner)}`);
     }
@@ -112,9 +109,9 @@ export const CreateLotteryStoreView = () => {
     }).finally(async ()=>{
       if(mintAdd != ""){
         try{
+          await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
           console.log("mint address",mintAdd);
           setMintAddress(mintAdd);
-          await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(programIds().store));
           setMintCount(mintCount + 1);
           setNFTUri('');
           setNFTName('');
@@ -122,6 +119,7 @@ export const CreateLotteryStoreView = () => {
           form.resetFields();
         }
         catch(err:any){
+          alert(err);
           console.log(err);
         }
       }

@@ -112,5 +112,5 @@ export async function mintNFTStore(
     'single',
   );
 
-  return { txid, slot, mint: account.toBase58() };
+  return { txid, slot, mint: keypair.publicKey.toBase58() };
 }

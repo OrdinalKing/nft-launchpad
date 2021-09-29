@@ -70,7 +70,7 @@ pub fn mint_nft(
   let accounts = parse_accounts(program_id, accounts)?;
 
   create_or_allocate_account_raw(
-    *program_id,
+    *accounts.store_id,
     accounts.nftmeta,
     accounts.rent,
     accounts.system,
