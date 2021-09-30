@@ -52,10 +52,11 @@ export const CreateLotteryStoreView = () => {
           console.log(account);
           console.log("store id",storeid);
           setStoreID(storeid);
-
+          alert("successfully created store");
         }
         catch(err:any){
           console.log(err);
+          alert("failed created store");
         }
       }
     });
@@ -124,9 +125,10 @@ export const CreateLotteryStoreView = () => {
           setNFTName('');
           setNFTSymbol('');
           form.resetFields();
+          alert("successfully minted");
         }
         catch(err:any){
-          alert(err);
+          alert("mint failed");
           console.log(err);
         }
       }
