@@ -100,6 +100,7 @@ pub fn mint_nft(
   // )?;
 
   store.nft_amount += 1;
+  store.serialize(&mut *accounts.store_id.data.borrow_mut())?;
 
   // Configure Store.
   NFTMeta {

@@ -13,6 +13,7 @@ import {
   toPublicKey,
   programIds,
   MintNFTArgs,
+  decodeStore,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
@@ -47,9 +48,11 @@ export const CreateLotteryStoreView = () => {
     }).finally(async ()=>{
       if(storeid != ""){
         try{
+          var account = await loadAccount(connection, toPublicKey(storeid), toPublicKey(storeProgramId));
+          console.log(account);
           console.log("store id",storeid);
           setStoreID(storeid);
-          await loadAccount(connection, toPublicKey(storeid), toPublicKey(storeProgramId));
+
         }
         catch(err:any){
           console.log(err);
@@ -77,7 +80,8 @@ export const CreateLotteryStoreView = () => {
     if (!accountInfo.owner.equals(programId)) {
       throw new Error(`Invalid owner: ${JSON.stringify(accountInfo.owner)}`);
     }
-  
+    var decoded = decodeStore(Buffer.from(accountInfo.data));
+    console.log(decoded);
     return Buffer.from(accountInfo.data);
   }
 
@@ -109,10 +113,13 @@ export const CreateLotteryStoreView = () => {
     }).finally(async ()=>{
       if(mintAdd != ""){
         try{
-          await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
+          var account = await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
+          var storeaccount = await loadAccount(connection, toPublicKey(storeID), toPublicKey(storeProgramId));
+          var decoded = decodeStore(storeaccount);
+          console.log(decoded);
           console.log("mint address",mintAdd);
           setMintAddress(mintAdd);
-          setMintCount(mintCount + 1);
+          setMintCount(decoded.nftAmount.toNumber());
           setNFTUri('');
           setNFTName('');
           setNFTSymbol('');
