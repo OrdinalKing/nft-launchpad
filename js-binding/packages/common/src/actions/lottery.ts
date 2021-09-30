@@ -215,7 +215,7 @@ export const LOTTERY_SCHEMA = new Map<any, any>([
       fields: [
         ['owner', 'pubkeyAsString'],
         ['state', 'u8'],
-        ['winnedNFTAmount', 'u64'],
+        ['winnedNFTNumber', 'u64'],
       ],
     },
   ],
@@ -458,6 +458,130 @@ export async function getTicket(
     },
     {
       pubkey: SYSVAR_CLOCK_PUBKEY,
+      isSigner: false,
+      isWritable: false,
+    },
+  ];
+  instructions.push(
+    new TransactionInstruction({
+      keys,
+      programId: toPublicKey(lotteryProgramId),
+      data: data,
+    }),
+  );
+}
+
+export async function claimNFT(
+  lottery: StringPublicKey,
+  lotteryStore: StringPublicKey,
+  claimer: StringPublicKey,
+  ticket: StringPublicKey,
+  nftMeta: StringPublicKey,
+  nftMint: StringPublicKey,
+  nftPool: StringPublicKey,
+  userNft: StringPublicKey,
+  instructions: TransactionInstruction[],
+) {
+  const lotteryProgramId = programIds().lottery;
+
+  const data = Buffer.from([5]);
+
+  const keys = [
+    {
+      pubkey: toPublicKey(lottery),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(lotteryStore),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(claimer),
+      isSigner: true,
+      isWritable: false,
+    },
+    {
+      pubkey: toPublicKey(ticket),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(nftMeta),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(nftMint),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(nftPool),
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: toPublicKey(userNft),
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: programIds().token,
+      isSigner: false,
+      isWritable: false,
+    },
+  ];
+  instructions.push(
+    new TransactionInstruction({
+      keys,
+      programId: toPublicKey(lotteryProgramId),
+      data: data,
+    }),
+  );
+}
+
+export async function claimToken(
+  lottery: StringPublicKey,
+  claimer: StringPublicKey,
+  ticket: StringPublicKey,
+  poolToken: StringPublicKey,
+  userToken: StringPublicKey,
+  instructions: TransactionInstruction[],
+) {
+  const lotteryProgramId = programIds().lottery;
+
+  const data = Buffer.from([6]);
+
+  const keys = [
+    {
+      pubkey: toPublicKey(lottery),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(claimer),
+      isSigner: true,
+      isWritable: false,
+    },
+    {
+      pubkey: toPublicKey(ticket),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(poolToken),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(userToken),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: programIds().token,
       isSigner: false,
       isWritable: false,
     },
