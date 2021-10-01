@@ -45,7 +45,7 @@ export class NFTMeta {
   /// Pubkey for mint address
   mint: StringPublicKey;
   /// token pool to store current nft
-  token_pool: StringPublicKey;
+  tokenPool: StringPublicKey;
   /// Pubkey of the authority with permission to modify this store.
   authority: StringPublicKey;
   /// flag of current nft is sold or not
@@ -59,7 +59,7 @@ export class NFTMeta {
     symbol: string;
     uri: string;
     mint: StringPublicKey;
-    token_pool: StringPublicKey;
+    tokenPool: StringPublicKey;
     authority: StringPublicKey;
     existNft: number;
     bump: number;
@@ -70,7 +70,7 @@ export class NFTMeta {
     this.symbol = args.symbol;
     this.uri = args.uri;
     this.mint = args.mint;
-    this.token_pool = args.token_pool;
+    this.tokenPool = args.tokenPool;
     this.authority = args.authority;
     this.existNft = args.existNft;
     this.bump = args.bump;
