@@ -19,6 +19,7 @@ export function CoingeckoProvider({ children = null as any }) {
   const [solPrice, setSolPrice] = useState<number>(0);
 
   useEffect(() => {
+    /*
     let timerId = 0;
     const queryPrice = async () => {
       const price = await solToUSD();
@@ -36,6 +37,7 @@ export function CoingeckoProvider({ children = null as any }) {
     return () => {
       clearTimeout(timerId);
     };
+    */
   }, [setSolPrice]);
 
   return (

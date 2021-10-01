@@ -20,7 +20,7 @@ use {
 };
 
 struct Accounts<'a, 'b: 'a> {
-    authority: &'a AccountInfo<'b>,
+    creator: &'a AccountInfo<'b>,
     lottery: &'a AccountInfo<'b>,
     clock_sysvar: &'a AccountInfo<'b>,
 }
@@ -31,12 +31,12 @@ fn parse_accounts<'a, 'b: 'a>(
 ) -> Result<Accounts<'a, 'b>, ProgramError> {
     let account_iter = &mut accounts.iter();
     let accounts = Accounts {
-        authority: next_account_info(account_iter)?,
+        creator: next_account_info(account_iter)?,
         lottery: next_account_info(account_iter)?,
         clock_sysvar: next_account_info(account_iter)?,
     };
     assert_owned_by(accounts.lottery, program_id)?;
-    assert_signer(accounts.authority)?;
+    assert_signer(accounts.creator)?;
     Ok(accounts)
 }
 
@@ -61,11 +61,6 @@ pub fn start_lottery<'a, 'b: 'a>(
             lottery.lottery_store_id.as_ref(),
         ],
     )?;
-
-    // Check authority is correct.
-    if lottery.authority != *accounts.authority.key {
-        return Err(LotteryError::InvalidAuthority.into());
-    }
 
     let cur_timestamp = clock.unix_timestamp as u64;
     if cur_timestamp > lottery.end_lottery_at {

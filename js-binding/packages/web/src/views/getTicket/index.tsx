@@ -17,9 +17,9 @@ import {
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import moment from 'moment';
-import { makeLottery } from '../../actions';
+import { joinRaffle, makeLottery, startCreatedLottery } from '../../actions';
 import BN from 'bn.js';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
 import { getFilteredProgramAccounts } from '@solana/spl-name-service';
 
 
@@ -35,12 +35,17 @@ export const GetTicketView = () => {
   const [ticketAmount, setTicketAmount] = useState(0);
   const [ticketPrice, setTicketPrice] = useState(0);
   const [boughtTicketAmount, setBoughtTicketAmount] = useState(0);
+  const [lotteryData, setLotteryData] = useState({});
   
-
+  function getLotteryStatus(state:string){
+    return state === "0"?"Created":state === "1"?"Started":"Ended";
+  }
   async function loadLotteryData() {
+    console.log("loading ...")
     let lotteryBuffer = await loadAccount(connection,toPublicKey(lotteryID),toPublicKey(programIds().lottery));
     let lotteryData = decodeLotteryData(lotteryBuffer);
-    setLotteryStatus(lotteryData.state.toString());
+    setLotteryData(lotteryData);
+    setLotteryStatus(getLotteryStatus(lotteryData.state.toString()));
     setLotteryStoreId(lotteryData.lotteryStoreId);
     setNFTAmount(lotteryData.nftAmount.toNumber());
     setTicketAmount(lotteryData.ticketAmount.toNumber());
@@ -63,11 +68,36 @@ export const GetTicketView = () => {
         }
       },
     ];
-    getFilteredProgramAccounts(connection,toPublicKey(programIds().lottery),filters);
+    getFilteredProgramAccounts(connection,toPublicKey(programIds().lottery),filters)
+    .then((ticketAccounts:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[])=>{
+      setBoughtTicketAmount(ticketAccounts.length);
+
+    })
+    .catch((error:any)=>{
+      console.log(error);
+    })
   }
   async function getTicketOne() {
-      
+      joinRaffle(connection, wallet, lotteryID, lotteryData as any)
+      .then(({txid,slot})=>{
+        console.log("txid - ",txid);
+        loadLotteryData();
+      })
+      .catch((error)=>{
+        console.log(error);
+      })
   }
+  async function start() {
+    startCreatedLottery(connection, wallet, lotteryStoreId)
+    .then(({txid,slot})=>{
+      console.log("txid - ",txid);
+      loadLotteryData();
+    })
+    .catch((error)=>{
+      console.log(error);
+      loadLotteryData();
+    })
+}
   async function loadAccount(
     connection: Connection,
     address: PublicKey,
@@ -139,25 +169,37 @@ export const GetTicketView = () => {
             </div>
             }
           </Form.Item>
-
-          <Form.Item
-            wrapperCol={{
-              offset: 8,
-              span: 16,
-            }}
-          >
-            <Button htmlType="submit" onClick={e => getTicketOne()}>
-              Get Ticket
-            </Button>
-            { 
-            <div >
-                <br/>
-                bought ticket amount - {boughtTicketAmount}
-                <br/>
-            </div>
+            {
+              lotteryStatus == ""?"": "Created" ? 
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                <Button htmlType="submit" onClick={e => start()}>
+                  Start Lottery
+                </Button>
+              </Form.Item>
+              :
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                <Button htmlType="submit" onClick={e => getTicketOne()}>
+                  Get Ticket
+                </Button>
+                { 
+                <div >
+                    <br/>
+                    bought ticket amount - {boughtTicketAmount}
+                    <br/>
+                </div>
+                }
+              </Form.Item>
             }
-          </Form.Item>
-          
         </Form>
         
       </div>

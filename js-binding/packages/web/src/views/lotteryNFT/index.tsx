@@ -32,7 +32,7 @@ export const CreateLotteryNFTView = () => {
   const [storeID, setStoreID] = useState('2Pgj2xq6G1oNcziFdHbt88hbmWaW1GQPdhcXPkNzZk42');
   const [createdLottery, setCreatedLottery] = useState('');
   const [mintAddress, setMintAddress] = useState(QUOTE_MINT.toBase58());
-  const [enddate, setEndDate] = useState(moment().unix()+7 * 24 * 3600);
+  const [enddate, setEndDate] = useState(moment().unix()+2 * 3600);
   const [ticketPrice, setTicketPrice] = useState(1);
   const [ticketAmount, setTicketAmount] = useState(10);
   const [nftAmount, setNftAmount] = useState(100);
@@ -45,9 +45,10 @@ export const CreateLotteryNFTView = () => {
     setCreatedLottery("");
 
     let lotteryId = "";
+    const decimals = 9;
     makeLottery(connection, wallet, storeID, mintAddress, new CreateLotteryArgs({
       endLotteryAt: new BN(enddate),
-      ticketPrice: new BN(ticketPrice),
+      ticketPrice: new BN(ticketPrice * Math.pow(10,9)),
       ticketAmount: ticketAmount,
       nftAmount: nftAmount
     })).then(({txid,slot,lottery})=>{
