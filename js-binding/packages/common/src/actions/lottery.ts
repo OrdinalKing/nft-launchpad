@@ -214,6 +214,7 @@ export const LOTTERY_SCHEMA = new Map<any, any>([
       kind: 'struct',
       fields: [
         ['owner', 'pubkeyAsString'],
+        ['lotteryId', 'pubkeyAsString'],
         ['state', 'u8'],
         ['winnedNFTNumber', 'u64'],
       ],

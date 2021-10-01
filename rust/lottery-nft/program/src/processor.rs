@@ -47,6 +47,7 @@ pub fn process_instruction(
 #[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq, Debug)]
 pub struct Ticket {
     pub owner: Pubkey,
+    pub lottery_id: Pubkey,
     pub state: TicketState, 
     pub winned_nft_number: u64
 }

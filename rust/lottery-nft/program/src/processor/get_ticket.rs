@@ -169,6 +169,7 @@ pub fn get_ticket<'r, 'b: 'r>(
         )?;
         Ticket{
             owner:*accounts.bidder.key,
+            lottery_id:*accounts.lottery.key,
             state:ticket_state,
             winned_nft_number:winned_nft_num
         }

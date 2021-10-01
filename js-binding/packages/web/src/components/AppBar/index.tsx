@@ -69,8 +69,11 @@ const DefaultActions = ({ vertical = false }: { vertical?: boolean }) => {
       <Link to={`/create-lottery`}>
         <Button className="app-btn">Create Lottery NFT</Button>
       </Link>
-      <Link to={`/join-raffle`}>
-        <Button className="app-btn">Join Raffle</Button>
+      <Link to={`/get-ticket`}>
+        <Button className="app-btn">Get ticket</Button>
+      </Link>
+      <Link to={`/claim`}>
+        <Button className="app-btn">Claim</Button>
       </Link>
     </div>
   );
