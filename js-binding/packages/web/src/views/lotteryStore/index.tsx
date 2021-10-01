@@ -13,7 +13,7 @@ import {
   toPublicKey,
   programIds,
   MintNFTArgs,
-  decodeStore,
+  decodeStoreData,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
@@ -80,7 +80,7 @@ export const CreateLotteryStoreView = () => {
     if (!accountInfo.owner.equals(programId)) {
       throw new Error(`Invalid owner: ${JSON.stringify(accountInfo.owner)}`);
     }
-    var decoded = decodeStore(Buffer.from(accountInfo.data));
+    var decoded = decodeStoreData(Buffer.from(accountInfo.data));
     console.log(decoded);
     return Buffer.from(accountInfo.data);
   }
@@ -115,7 +115,7 @@ export const CreateLotteryStoreView = () => {
         try{
           var account = await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
           var storeaccount = await loadAccount(connection, toPublicKey(storeID), toPublicKey(storeProgramId));
-          var decoded = decodeStore(storeaccount);
+          var decoded = decodeStoreData(storeaccount);
           console.log(decoded);
           console.log("mint address",mintAdd);
           setMintAddress(mintAdd);
