@@ -11,7 +11,7 @@ use crate::{
     },
     PREFIX,
 };
-use lottery_store_v1::{
+use lottery_store::{
     processor::{StoreData,NFTMeta}
 };
 use {
