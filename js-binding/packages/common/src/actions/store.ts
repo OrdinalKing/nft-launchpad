@@ -13,23 +13,6 @@ import { StringPublicKey, toPublicKey } from '../utils';
 
 export const STORE_PREFIX = 'store';
 
-export const StoreParser: AccountParser = (
-  pubkey: StringPublicKey,
-  account: AccountInfo<Buffer>,
-) => ({
-  pubkey,
-  account,
-  info: decodeStore(account.data),
-});
-
-export const decodeStore = (buffer: Buffer) => {
-  return deserializeUnchecked(STORE_SCHEMA, StoreData, buffer) as StoreData;
-};
-
-export const decodeNFTMeta = (buffer: Buffer) => {
-  return deserializeUnchecked(STORE_SCHEMA, NFTMeta, buffer) as NFTMeta;
-};
-
 export class StoreData {
   /// Pubkey of the authority with permission to modify this store.
   authority: StringPublicKey;
@@ -189,6 +172,15 @@ export const decodeStoreData = (buffer: Buffer) => {
 export const decodeNFTMetaData = (buffer: Buffer) => {
   return deserializeUnchecked(MINT_NFT_SCHEMA, NFTMeta, buffer) as NFTMeta;
 };
+
+export const StoreParser: AccountParser = (
+  pubkey: StringPublicKey,
+  account: AccountInfo<Buffer>,
+) => ({
+  pubkey,
+  account,
+  info: decodeStoreData(account.data),
+});
 
 export async function createStore(
   settings: CreateStoreArgs,
