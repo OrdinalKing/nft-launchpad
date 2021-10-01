@@ -26,6 +26,10 @@ export const decodeStore = (buffer: Buffer) => {
   return deserializeUnchecked(STORE_SCHEMA, StoreData, buffer) as StoreData;
 };
 
+export const decodeNFTMeta = (buffer: Buffer) => {
+  return deserializeUnchecked(STORE_SCHEMA, NFTMeta, buffer) as NFTMeta;
+};
+
 export class StoreData {
   /// Pubkey of the authority with permission to modify this store.
   authority: StringPublicKey;
@@ -48,6 +52,7 @@ export class StoreData {
 export class NFTMeta {
   /// Pubkey of the authority with permission to modify this store.
   storeId: StringPublicKey;
+  nftNumber: BN;
   /// The name of the asset
   name: string;
   /// The symbol for the asset
@@ -66,6 +71,7 @@ export class NFTMeta {
 
   constructor(args: {
     storeId: StringPublicKey;
+    nftNumber: BN;
     name: string;
     symbol: string;
     uri: string;
@@ -76,6 +82,7 @@ export class NFTMeta {
     bump: number;
   }) {
     this.storeId = args.storeId;
+    this.nftNumber = args.nftNumber;
     this.name = args.name;
     this.symbol = args.symbol;
     this.uri = args.uri;
@@ -162,6 +169,7 @@ export const MINT_NFT_SCHEMA = new Map<any, any>([
       kind: 'struct',
       fields: [
         ['storeId', 'pubkeyAsString'],
+        ['nftNumber', 'u64'],
         ['name', 'string'],
         ['symbol', 'string'],
         ['uri', 'string'],

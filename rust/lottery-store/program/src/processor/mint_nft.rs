@@ -105,6 +105,7 @@ pub fn mint_nft(
   // Configure Store.
   NFTMeta {
     store_id: *accounts.store_id.key,
+    nft_number: store.nft_amount,
     name: args.name,
     symbol: args.symbol,
     uri: args.uri,

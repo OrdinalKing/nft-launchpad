@@ -38,14 +38,13 @@ export const CreateLotteryStoreView = () => {
     let storeid = '';
     const storeProgramId = programIds().store;
 
-    
     makeStore(connection, wallet).then(({txid,slot,store})=>{
       console.log(txid);
       console.log(slot);
       storeid = store;
     }).catch((reason)=>{ 
       console.log(reason)
-    }).finally(async ()=>{
+    }).finally(async () => {
       if(storeid != ""){
         try{
           var account = await loadAccount(connection, toPublicKey(storeid), toPublicKey(storeProgramId));

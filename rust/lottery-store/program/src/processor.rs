@@ -41,6 +41,7 @@ pub struct StoreData {
 pub struct NFTMeta {
     /// Pubkey of the authority with permission to modify this store.
     pub store_id: Pubkey,
+    pub nft_number: u64,
     /// The name of the asset
     pub name: String,
     /// The symbol for the asset
