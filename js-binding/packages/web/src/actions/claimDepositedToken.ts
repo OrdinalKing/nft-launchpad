@@ -1,18 +1,16 @@
 import { Connection, Keypair, TransactionInstruction } from '@solana/web3.js';
 import {
-  actions,
   StringPublicKey,
   WalletSigner,
   sendTransactionWithRetry,
-  utils,
+  createTokenAccountIfNotExist,
+  claimToken,
   LotteryData,
+  WRAPPED_SOL_MINT,
+  programIds,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
-import { closeAccount } from '@project-serum/serum/lib/token-instructions';
-import { AccountLayout } from '@solana/spl-token';
-
-const { claimToken } = actions;
-const { createTokenAccountIfNotExist } = utils;
+import { AccountLayout, Token } from '@solana/spl-token';
 
 // This command makes an Lottery
 export async function claimDepositedToken(
@@ -39,7 +37,7 @@ export async function claimDepositedToken(
     connection,
     null,
     wallet.publicKey,
-    utils.WRAPPED_SOL_MINT.toBase58(),
+    WRAPPED_SOL_MINT.toBase58(),
     lotteryData.ticketPrice.toNumber() + accountRentExempt,
     instructions,
     signers,
@@ -54,11 +52,13 @@ export async function claimDepositedToken(
     instructions,
   );
   instructions.push(
-    closeAccount({
-      source: userWsolAccount,
-      destination: wallet,
-      owner: wallet,
-    }),
+    Token.createCloseAccountInstruction(
+      programIds().token,
+      userWsolAccount,
+      wallet.publicKey,
+      wallet.publicKey,
+      signers,
+    ),
   );
   const { txid, slot } = await sendTransactionWithRetry(
     connection,

@@ -3,6 +3,7 @@ export * from './createVault';
 export * from './makeAuction';
 export * from './makeLottery';
 export * from './joinRaffle';
+export * from './getTicketFromLottery';
 export * from './startCreatedLottery';
 export * from './makeStore';
 export * from './mintNFTStore';

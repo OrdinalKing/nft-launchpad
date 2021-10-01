@@ -1,24 +1,21 @@
 import { Connection, Keypair, TransactionInstruction } from '@solana/web3.js';
 import {
-  actions,
-  StringPublicKey,
   WalletSigner,
   sendTransactionWithRetry,
-  utils,
+  getTicket,
   LotteryData,
-  createSplKeypair,
+  createTokenAccountIfNotExist,
+  WRAPPED_SOL_MINT,
+  programIds,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
-import { closeAccount } from '@project-serum/serum/lib/token-instructions';
-import { AccountLayout } from '@solana/spl-token';
-
-const { getTicket } = actions;
+import { AccountLayout, Token } from '@solana/spl-token';
 
 // This command makes an Lottery
-export async function joinRaffle(
+export async function getTicketFromLottery(
   connection: Connection,
   wallet: WalletSigner,
-  lottery: StringPublicKey,
+  lottery: string,
   lotteryData: LotteryData,
 ): Promise<{
   txid: string;
@@ -26,43 +23,47 @@ export async function joinRaffle(
 }> {
   if (!wallet.publicKey) throw new WalletNotConnectedError();
 
-  const instructions: TransactionInstruction[] = [];
-
-  const ticketKeypair = new Keypair();
-  const signers: Keypair[] = [];
-  signers.push(ticketKeypair);
-
   const accountRentExempt = await connection.getMinimumBalanceForRentExemption(
     AccountLayout.span,
   );
 
-  const userWsolKeypair = createSplKeypair(
-    instructions,
-    wallet.publicKey,
-    lotteryData.ticketPrice.toNumber() + accountRentExempt,
-    utils.WRAPPED_SOL_MINT,
-    wallet.publicKey,
-    AccountLayout.span,
-  );
-  signers.push(userWsolKeypair);
+  const instructions: TransactionInstruction[] = [];
 
-  await getTicket(
-    ticketKeypair.publicKey.toBase58(),
+  const signers: Keypair[] = [];
+  const ticket = new Keypair();
+  signers.push(ticket);
+
+  const userWsolToken = await createTokenAccountIfNotExist(
+    connection,
+    null,
+    wallet.publicKey,
+    WRAPPED_SOL_MINT.toBase58(),
+    lotteryData.ticketPrice.toNumber() + accountRentExempt,
+    instructions,
+    signers,
+  );
+
+  getTicket(
+    ticket.publicKey.toBase58(),
     wallet.publicKey.toBase58(),
-    userWsolKeypair.publicKey.toBase58(),
+    userWsolToken.toBase58(),
     lotteryData.tokenPool,
     lotteryData.tokenMint,
     wallet.publicKey.toBase58(),
     lottery,
     instructions,
   );
+
   instructions.push(
-    closeAccount({
-      source: userWsolKeypair.publicKey,
-      destination: wallet,
-      owner: wallet,
-    }),
+    Token.createCloseAccountInstruction(
+      programIds().token,
+      userWsolToken,
+      wallet.publicKey,
+      wallet.publicKey,
+      signers,
+    ),
   );
+
   const { txid, slot } = await sendTransactionWithRetry(
     connection,
     wallet,

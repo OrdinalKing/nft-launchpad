@@ -29,14 +29,17 @@ export enum TicketState {
 
 export class Ticket {
   owner: StringPublicKey;
+  lotteryId: StringPublicKey;
   state: TicketState;
   winnedNFTNumber: BN;
   constructor(args: {
     owner: StringPublicKey;
+    lotteryId: StringPublicKey;
     state: TicketState;
     winnedNFTNumber: BN;
   }) {
     this.owner = args.owner;
+    this.lotteryId = args.lotteryId;
     this.state = args.state;
     this.winnedNFTNumber = args.winnedNFTNumber;
   }
@@ -57,6 +60,10 @@ export const decodeLottery = (buffer: Buffer) => {
     LotteryData,
     buffer,
   ) as LotteryData;
+};
+
+export const decodeTicket = (buffer: Buffer) => {
+  return deserializeUnchecked(LOTTERY_SCHEMA, Ticket, buffer) as Ticket;
 };
 
 export interface LotteryCountdownState {
@@ -392,7 +399,7 @@ export async function setLotteryAuthority(
   );
 }
 
-export async function getTicket(
+export function getTicket(
   ticket: StringPublicKey,
   bidderPubkey: StringPublicKey,
   bidderTokenPubkey: StringPublicKey,

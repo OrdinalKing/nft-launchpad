@@ -4,21 +4,15 @@ import {
   Input,
   Form,
 } from 'antd';
-import { QUOTE_MINT } from '../../constants';
 import {
   useConnection,
-  useMint,
-  CreateLotteryArgs,
   toPublicKey,
   programIds,
   LotteryData,
   decodeLotteryData,
-  LOTTERY_SCHEMA,
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
-import moment from 'moment';
-import { joinRaffle, makeLottery, startCreatedLottery } from '../../actions';
-import BN from 'bn.js';
+import { getTicketFromLottery, startCreatedLottery } from '../../actions';
 import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
 import { getFilteredProgramAccounts } from '@solana/spl-name-service';
 
@@ -35,7 +29,7 @@ export const GetTicketView = () => {
   const [ticketAmount, setTicketAmount] = useState(0);
   const [ticketPrice, setTicketPrice] = useState(0);
   const [boughtTicketAmount, setBoughtTicketAmount] = useState(0);
-  const [lotteryData, setLotteryData] = useState({});
+  const [lotteryData, setLotteryData] = useState({} as LotteryData);
   
   function getLotteryStatus(state:string){
     return state === "0"?"Created":state === "1"?"Started":"Ended";
@@ -53,7 +47,7 @@ export const GetTicketView = () => {
 
     const filters = [
       {
-        dataSize: 73
+        dataSize: 80
       },
       {
         memcmp: {
@@ -70,6 +64,7 @@ export const GetTicketView = () => {
     ];
     getFilteredProgramAccounts(connection,toPublicKey(programIds().lottery),filters)
     .then((ticketAccounts:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[])=>{
+      
       setBoughtTicketAmount(ticketAccounts.length);
 
     })
@@ -78,13 +73,14 @@ export const GetTicketView = () => {
     })
   }
   async function getTicketOne() {
-      joinRaffle(connection, wallet, lotteryID, lotteryData as any)
+    getTicketFromLottery(connection, wallet, lotteryID, lotteryData)
       .then(({txid,slot})=>{
         console.log("txid - ",txid);
         loadLotteryData();
       })
       .catch((error)=>{
         console.log(error);
+        loadLotteryData();
       })
   }
   async function start() {
@@ -165,12 +161,12 @@ export const GetTicketView = () => {
                 <br/>
                 ticket amount - {ticketAmount}
                 <br/>
-                ticket price - {ticketPrice}
+                ticket price - {ticketPrice} SOL
             </div>
             }
           </Form.Item>
             {
-              lotteryStatus == ""?"": "Created" ? 
+              lotteryStatus == ""?"": lotteryStatus == "Created" ? 
               <Form.Item
                 wrapperCol={{
                   offset: 8,
