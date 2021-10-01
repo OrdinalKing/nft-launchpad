@@ -43,7 +43,7 @@ export async function claimDepositedToken(
     signers,
   );
 
-  await claimToken(
+  claimToken(
     lottery,
     wallet.publicKey.toBase58(),
     ticket,

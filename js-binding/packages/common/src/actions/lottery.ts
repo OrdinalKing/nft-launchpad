@@ -479,7 +479,7 @@ export function getTicket(
   );
 }
 
-export async function claimNFT(
+export function claimNFT(
   lottery: StringPublicKey,
   lotteryStore: StringPublicKey,
   claimer: StringPublicKey,
@@ -528,12 +528,12 @@ export async function claimNFT(
     {
       pubkey: toPublicKey(nftPool),
       isSigner: false,
-      isWritable: false,
+      isWritable: true,
     },
     {
       pubkey: toPublicKey(userNft),
       isSigner: false,
-      isWritable: false,
+      isWritable: true,
     },
     {
       pubkey: programIds().token,
@@ -541,6 +541,7 @@ export async function claimNFT(
       isWritable: false,
     },
   ];
+  console.log(keys);
   instructions.push(
     new TransactionInstruction({
       keys,
@@ -550,7 +551,7 @@ export async function claimNFT(
   );
 }
 
-export async function claimToken(
+export function claimToken(
   lottery: StringPublicKey,
   claimer: StringPublicKey,
   ticket: StringPublicKey,

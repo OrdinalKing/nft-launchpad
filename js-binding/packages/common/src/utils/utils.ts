@@ -429,3 +429,51 @@ export async function createProgramAccountIfNotExist(
 
   return publicKey;
 }
+
+export async function createTokenAccountIfNotExist2(
+  connection: Connection,
+  newKeypair: Keypair,
+  owner: PublicKey,
+  mintAddress: string,
+  lamports: number | null,
+  instructions: TransactionInstruction[],
+) {
+  await createProgramAccountIfNotExist2(
+    connection,
+    newKeypair,
+    owner,
+    TOKEN_PROGRAM_ID,
+    lamports,
+    AccountLayout,
+    instructions,
+  );
+
+  instructions.push(
+    initializeAccount({
+      account: newKeypair.publicKey,
+      mint: new PublicKey(mintAddress),
+      owner,
+    }),
+  );
+}
+export async function createProgramAccountIfNotExist2(
+  connection: Connection,
+  newKeypair: Keypair,
+  owner: PublicKey,
+  programId: PublicKey,
+  lamports: number | null,
+  layout: any,
+  instructions: TransactionInstruction[],
+) {
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: owner,
+      newAccountPubkey: newKeypair.publicKey,
+      lamports:
+        lamports ??
+        (await connection.getMinimumBalanceForRentExemption(layout.span)),
+      space: layout.span,
+      programId,
+    }),
+  );
+}

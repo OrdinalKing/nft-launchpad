@@ -3,22 +3,24 @@ import {
   StringPublicKey,
   WalletSigner,
   sendTransactionWithRetry,
-  NFTMeta,
+  createTokenAccountIfNotExist,
   claimNFT,
-  createTokenAccountIfNotExist2,
+  LotteryData,
+  NFTMeta,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
 import { AccountLayout } from '@solana/spl-token';
 
 // This command makes an Lottery
-export async function claimWinnedNFT(
+export async function claimGainedNft(
   connection: Connection,
   wallet: WalletSigner,
   lottery: StringPublicKey,
-  lotteryStore: StringPublicKey,
   ticket: StringPublicKey,
-  nftMetaAccount: StringPublicKey,
-  nftMetaData: NFTMeta,
+  nftTokenAccount: StringPublicKey | undefined | null,
+  nftMetaId: StringPublicKey,
+  nftMeta: NFTMeta,
+  lotteryData: LotteryData,
 ): Promise<{
   txid: string;
   slot: number;
@@ -33,28 +35,28 @@ export async function claimWinnedNFT(
     AccountLayout.span,
   );
 
-  const nftTokenKeypair = new Keypair();
-  await createTokenAccountIfNotExist2(
+  const userNftTokenAccount = await createTokenAccountIfNotExist(
     connection,
-    nftTokenKeypair,
+    nftTokenAccount,
     wallet.publicKey,
-    nftMetaData.mint,
+    nftMeta.mint,
     accountRentExempt,
     instructions,
+    signers,
   );
-  signers.push(nftTokenKeypair);
 
   claimNFT(
     lottery,
-    lotteryStore,
+    lotteryData.lotteryStoreId,
     wallet.publicKey.toBase58(),
     ticket,
-    nftMetaAccount,
-    nftMetaData.mint,
-    nftMetaData.tokenPool,
-    nftTokenKeypair.publicKey.toBase58(),
+    nftMetaId,
+    nftMeta.mint,
+    nftMeta.tokenPool,
+    userNftTokenAccount.toBase58(),
     instructions,
   );
+
   const { txid, slot } = await sendTransactionWithRetry(
     connection,
     wallet,
