@@ -253,7 +253,7 @@ export async function mintNFT(
     },
     {
       pubkey: toPublicKey(nftmeta),
-      isSigner: false,
+      isSigner: true,
       isWritable: true,
     },
     {
@@ -273,7 +273,7 @@ export async function mintNFT(
     },
     {
       pubkey: toPublicKey(tokenPoolKey),
-      isSigner: true,
+      isSigner: false,
       isWritable: true,
     },
     {

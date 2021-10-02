@@ -1,5 +1,10 @@
-import { Connection, Keypair, TransactionInstruction } from '@solana/web3.js';
-import { MintLayout } from '@solana/spl-token';
+import {
+  Connection,
+  Keypair,
+  SystemProgram,
+  TransactionInstruction,
+} from '@solana/web3.js';
+import { AccountLayout, MintLayout, Token } from '@solana/spl-token';
 
 import {
   actions,
@@ -8,10 +13,9 @@ import {
   sendTransactionWithRetry,
   toPublicKey,
   MintNFTArgs,
-  createSPLTokenKeypair,
+  programIds,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
-import { createMint } from '@oyster/common';
 
 const { mintNFT } = actions;
 
@@ -41,54 +45,79 @@ export async function mintNFTStore(
   const instructions: TransactionInstruction[] = [];
   const signers: Keypair[] = [];
 
-  const mintRentExempt = await connection.getMinimumBalanceForRentExemption(
+  // Allocate memory for the account
+  const mintRent = await connection.getMinimumBalanceForRentExemption(
     MintLayout.span,
   );
+  const accountRent = await connection.getMinimumBalanceForRentExemption(
+    AccountLayout.span,
+  );
+  const mintAccount = new Keypair();
+  const tokenAccount = new Keypair();
 
-  // const _token = Token.createMint(
-  //   connection,
-  //   _wallet,
-  //   toPublicKey(storeid),
-  //   null,
-  //   0,
-  //   toPublicKey(PROGRAM_IDS.store),
-  // );
-
-  // console.log(toPublicKey(storeid));
-  // const account = (await _token).createAccount(toPublicKey(storeid));
-
-  // (await _token).mintTo(toPublicKey(storeid), toPublicKey(storeid), signers, 1);
-
-  // (await _token).setAuthority(
-  //   await account,
-  //   toPublicKey(storeid),
-  //   'MintTokens',
-  //   toPublicKey(storeid),
-  //   signers,
-  // );
-
-  const account = await createMint(
-    instructions,
-    wallet.publicKey,
-    mintRentExempt,
-    0,
-    toPublicKey(storeid),
-    toPublicKey(storeid),
-    signers,
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: wallet.publicKey,
+      newAccountPubkey: mintAccount.publicKey,
+      lamports: mintRent,
+      space: MintLayout.span,
+      programId: programIds().token,
+    }),
   );
 
-  const tokenPoolAccount = await createSPLTokenKeypair(
-    instructions,
-    connection,
-    wallet.publicKey,
-    toPublicKey(lotteryId),
-    account,
+  instructions.push(
+    SystemProgram.createAccount({
+      fromPubkey: wallet.publicKey,
+      newAccountPubkey: tokenAccount.publicKey,
+      lamports: accountRent,
+      space: AccountLayout.span,
+      programId: programIds().token,
+    }),
   );
 
-  const keypair = new Keypair();
+  instructions.push(
+    Token.createInitMintInstruction(
+      programIds().token,
+      mintAccount.publicKey,
+      0,
+      wallet.publicKey,
+      wallet.publicKey,
+    ),
+  );
+  instructions.push(
+    Token.createInitAccountInstruction(
+      programIds().token,
+      mintAccount.publicKey,
+      tokenAccount.publicKey,
+      toPublicKey(lotteryId),
+    ),
+  );
+  instructions.push(
+    Token.createMintToInstruction(
+      programIds().token,
+      mintAccount.publicKey,
+      tokenAccount.publicKey,
+      wallet.publicKey,
+      [],
+      1,
+    ),
+  );
+  instructions.push(
+    Token.createSetAuthorityInstruction(
+      programIds().token,
+      mintAccount.publicKey,
+      null,
+      'MintTokens',
+      wallet.publicKey,
+      [],
+    ),
+  );
 
-  signers.push(tokenPoolAccount);
-  signers.push(keypair);
+  const nftMetaKeypair = new Keypair();
+
+  signers.push(mintAccount);
+  signers.push(tokenAccount);
+  signers.push(nftMetaKeypair);
 
   const fullSettings = new MintNFTArgs({
     ...mintNFTSetting,
@@ -97,11 +126,11 @@ export async function mintNFTStore(
   await mintNFT(
     fullSettings,
     wallet.publicKey.toBase58(),
-    keypair.publicKey.toBase58(),
+    nftMetaKeypair.publicKey.toBase58(),
     storeid,
     storeid,
-    account.toBase58(),
-    tokenPoolAccount.publicKey.toBase58(),
+    mintAccount.publicKey.toBase58(),
+    tokenAccount.publicKey.toBase58(),
     instructions,
   );
 
@@ -113,5 +142,5 @@ export async function mintNFTStore(
     'single',
   );
 
-  return { txid, slot, mint: keypair.publicKey.toBase58() };
+  return { txid, slot, mint: nftMetaKeypair.publicKey.toBase58() };
 }
