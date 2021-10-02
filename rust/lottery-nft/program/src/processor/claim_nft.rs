@@ -76,6 +76,19 @@ pub fn claim_nft(
     msg!("+ Processing Claim");
     let accounts = parse_accounts(program_id, accounts)?;
 
+    let lottery_seeds = [
+        PREFIX.as_bytes(),
+        program_id.as_ref(),
+        &(*accounts.lottery_store.key).to_bytes(),
+    ];
+
+    // Derive the address we'll store the lottery in, and confirm it matches what we expected the
+    // user to provide.
+    let (lottery_key, bump) = Pubkey::find_program_address(&lottery_seeds, program_id);
+    if lottery_key != *accounts.lottery.key {
+        return Err(LotteryError::InvalidLotteryAccount.into());
+    }
+
     let mut lottery = LotteryData::from_account_info(accounts.lottery)?;
     let mut lottery_store = StoreData::from_account_info(accounts.lottery_store_id)?;
     let mut ticket = Ticket::from_account_info(accounts.ticket)?;
@@ -88,10 +101,12 @@ pub fn claim_nft(
     spl_token_transfer(TokenTransferParams {
         source: accounts.nft_pool_account.clone(),
         destination: accounts.user_nft_account.clone(),
-        authority: accounts.lottery_store_id.clone(),
+        authority: accounts.lottery.clone(),
         authority_signer_seeds: &[
-            &(*accounts.lottery_store_id.key).to_bytes(),
-            &[lottery_store.bump],
+            PREFIX.as_bytes(),
+            program_id.as_ref(),
+            &(*accounts.lottery_store.key).to_bytes(),
+            &[bump],
         ],
         token_program: accounts.token_program.clone(),
         amount: lottery.ticket_price,

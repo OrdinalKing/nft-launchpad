@@ -28,6 +28,7 @@ export const CreateLotteryStoreView = () => {
   const mint = useMint(QUOTE_MINT);
   const { width } = useWindowDimensions();
   const [storeID, setStoreID] = useState('');
+  const [lotteryId, setLotteryId] = useState('');
   const [mintCount, setMintCount] = useState(0);
   const [mintAddress, setMintAddress] = useState('');
   const [nfturi, setNFTUri] = useState('');
@@ -38,22 +39,22 @@ export const CreateLotteryStoreView = () => {
     let storeid = '';
     const storeProgramId = programIds().store;
 
-    makeStore(connection, wallet).then(({txid,slot,store})=>{
+    makeStore(connection, wallet).then(({ txid, slot, store }) => {
       console.log(txid);
       console.log(slot);
       storeid = store;
-    }).catch((reason)=>{ 
+    }).catch((reason) => {
       console.log(reason)
     }).finally(async () => {
-      if(storeid != ""){
-        try{
+      if (storeid != "") {
+        try {
           var account = await loadAccount(connection, toPublicKey(storeid), toPublicKey(storeProgramId));
           console.log(account);
-          console.log("store id",storeid);
+          console.log("store id", storeid);
           setStoreID(storeid);
           alert("successfully created store");
         }
-        catch(err:any){
+        catch (err: any) {
           console.log(err);
           alert("failed created store");
         }
@@ -98,120 +99,130 @@ export const CreateLotteryStoreView = () => {
     let [, nonce] = await PublicKey.findProgramAddress(
       [Buffer.from(STORE_PREFIX), toPublicKey(storeProgramId).toBuffer()],
       toPublicKey(storeProgramId),
-    ); 
+    );
 
-    mintNFTStore(connection, wallet, storeID, new MintNFTArgs({
-      name: nftname,
-      symbol: nftsymbol,
-      uri: nfturi,
-      bump: nonce,
-    })).then(({txid,slot,mint})=>{
-      console.log(txid);
-      mintAdd = mint;
-    }).catch((reason)=>{ 
-      console.log(reason)
-    }).finally(async ()=>{
-      if(mintAdd != ""){
-        try{
-          var account = await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
-          var storeaccount = await loadAccount(connection, toPublicKey(storeID), toPublicKey(storeProgramId));
-          var decoded = decodeStoreData(storeaccount);
-          console.log(decoded);
-          console.log("mint address",mintAdd);
-          setMintAddress(mintAdd);
-          setMintCount(decoded.nftAmount.toNumber());
-          setNFTUri('');
-          setNFTName('');
-          setNFTSymbol('');
-          form.resetFields();
-          alert("successfully minted");
+    mintNFTStore(
+      connection,
+      wallet,
+      storeID,
+      lotteryId,
+      new MintNFTArgs({
+        name: nftname,
+        symbol: nftsymbol,
+        uri: nfturi,
+        bump: nonce,
+      })).then(({ txid, slot, mint }) => {
+        console.log(txid);
+        mintAdd = mint;
+      }).catch((reason) => {
+        console.log(reason)
+      }).finally(async () => {
+        if (mintAdd != "") {
+          try {
+            var account = await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
+            var storeaccount = await loadAccount(connection, toPublicKey(storeID), toPublicKey(storeProgramId));
+            var decoded = decodeStoreData(storeaccount);
+            console.log(decoded);
+            console.log("mint address", mintAdd);
+            setMintAddress(mintAdd);
+            setMintCount(decoded.nftAmount.toNumber());
+            setNFTUri('');
+            setNFTName('');
+            setNFTSymbol('');
+            form.resetFields();
+            alert("successfully minted");
+          }
+          catch (err: any) {
+            alert("mint failed");
+            console.log(err);
+          }
         }
-        catch(err:any){
-          alert("mint failed");
-          console.log(err);
-        }
-      }
-    });
+      });
 
   }
 
   return (
     <>
       <div>
-        <Button className='btn-create-lottery' onClick={e => createStore()}>Create Store</Button>
-        <br/>
-        {storeID == '' ? '' : <div>
-        <div>Store ID: {storeID}</div>
-        <div>Mint Count: {mintCount}</div>
-        <br/>
+        <Button className='btn-create-lottery' onClick={e => createStore()}>Create New Store</Button>
+        <br />
+        {
+          <div>
+            <div>Store ID: <Input value={storeID} onChange={e => setStoreID(e.target.value)} /></div>
+            <div>Lottery ID: <Input value={lotteryId} onChange={e => setLotteryId(e.target.value)} /></div>
 
-        <h3>Mint new nft</h3>
-        
-        <Form
-          form={form} 
-          name="basic"
-          labelCol={{
-            span: 8,
-          }}
-          wrapperCol={{
-            span: 16,
-          }}
-          initialValues={{
-            remember: true,
-          }}
-          autoComplete="off">
-          <Form.Item
-            label="URI"
-            name="uri"
-            rules={[
-              {
-                required: true,
-                message: 'Please input uri!',
-              },
-            ]}
-          >
-            <Input value={nfturi} onChange={e=> setNFTUri(e.target.value)} />
-          </Form.Item>
+            <div>Mint Count: {mintCount}</div>
+            <br />
 
-          <Form.Item
-            label="Name"
-            name="name"
-            rules={[
-              {
-                required: true,
-                message: 'Please input name!',
-              },
-            ]}
-          >
-            <Input value={nftname} onChange={e=> setNFTName(e.target.value)} />
-          </Form.Item>
-          <Form.Item
-            label="Symbol"
-            name="symbol"
-            rules={[
-              {
-                required: true,
-                message: 'Please input symbol!',
-              },
-            ]}
-          >
-            <Input value={nftsymbol} onChange={e=> setNFTSymbol(e.target.value)} />
-          </Form.Item>
-          <Form.Item
-            wrapperCol={{
-              offset: 8,
-              span: 16,
-            }}
-          >
-            <Button htmlType="submit" onClick={e => mintNFT()}>
-              Mint NFT
-            </Button>
-          </Form.Item>
-        </Form>
-        <br/>
-        {mintAddress == '' ? '' :
-        <div className='mint-address'>Mint Address: {mintAddress}</div>}
-        </div>}
+            --------------------------------------------------<br />
+            <h3>Mint new nft</h3>
+
+            <Form
+              form={form}
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 16,
+              }}
+              initialValues={{
+                remember: true,
+              }}
+              autoComplete="off">
+
+              <Form.Item
+                label="URI"
+                name="uri"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input uri!',
+                  },
+                ]}
+              >
+                <Input value={nfturi} onChange={e => setNFTUri(e.target.value)} />
+              </Form.Item>
+
+              <Form.Item
+                label="Name"
+                name="name"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input name!',
+                  },
+                ]}
+              >
+                <Input value={nftname} onChange={e => setNFTName(e.target.value)} />
+              </Form.Item>
+              <Form.Item
+                label="Symbol"
+                name="symbol"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input symbol!',
+                  },
+                ]}
+              >
+                <Input value={nftsymbol} onChange={e => setNFTSymbol(e.target.value)} />
+              </Form.Item>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                  span: 16,
+                }}
+              >
+                <Button htmlType="submit" onClick={e => mintNFT()}>
+                  Mint NFT
+                </Button>
+              </Form.Item>
+            </Form>
+            <br />
+            {mintAddress == '' ? '' :
+              <div className='mint-address'>Mint Address: {mintAddress}</div>}
+          </div>}
       </div>
     </>
   );

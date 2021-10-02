@@ -20,6 +20,7 @@ export async function mintNFTStore(
   connection: Connection,
   wallet: WalletSigner,
   storeid: StringPublicKey,
+  lotteryId: StringPublicKey,
   mintNFTSetting: MintNFTArgs,
 ): Promise<{
   txid: string;
@@ -80,7 +81,7 @@ export async function mintNFTStore(
     instructions,
     connection,
     wallet.publicKey,
-    toPublicKey(storeid),
+    toPublicKey(lotteryId),
     account,
   );
 
