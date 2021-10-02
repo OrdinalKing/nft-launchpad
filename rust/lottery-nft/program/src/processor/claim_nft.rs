@@ -72,14 +72,14 @@ fn parse_accounts<'a, 'b: 'a>(
 pub fn claim_nft(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-) -> ProgramResult {
+) -> ProgramResult { 
     msg!("+ Processing Claim");
     let accounts = parse_accounts(program_id, accounts)?;
 
     let lottery_seeds = [
         PREFIX.as_bytes(),
         program_id.as_ref(),
-        &(*accounts.lottery_store.key).to_bytes(),
+        &(*accounts.lottery_store_id.key).to_bytes(),
     ];
 
     // Derive the address we'll store the lottery in, and confirm it matches what we expected the
@@ -105,7 +105,7 @@ pub fn claim_nft(
         authority_signer_seeds: &[
             PREFIX.as_bytes(),
             program_id.as_ref(),
-            &(*accounts.lottery_store.key).to_bytes(),
+            &(*accounts.lottery_store_id.key).to_bytes(),
             &[bump],
         ],
         token_program: accounts.token_program.clone(),

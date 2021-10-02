@@ -7,12 +7,10 @@ use solana_program::{
 // Declare submodules, each contains a single handler for each instruction variant in the program.
 pub mod create_store;
 pub mod mint_nft;
-pub mod claim_nft;
 
 // Re-export submodules handlers + associated types for other programs to consume.
 pub use create_store::*;
 pub use mint_nft::*;
-pub use claim_nft::*;
 
 pub fn process_instruction(
     program_id: &Pubkey,
@@ -22,8 +20,7 @@ pub fn process_instruction(
     use crate::instruction::StoreInstruction;
     match StoreInstruction::try_from_slice(input)? {
         StoreInstruction::CreateStore(args) => create_store(program_id, accounts, args),
-        StoreInstruction::MintNFT(args) => mint_nft(program_id, accounts, args),
-        StoreInstruction::ClaimNFT => claim_nft(program_id, accounts)
+        StoreInstruction::MintNFT(args) => mint_nft(program_id, accounts, args)
     }
 }
 
