@@ -109,7 +109,7 @@ pub fn claim_nft(
             &[bump],
         ],
         token_program: accounts.token_program.clone(),
-        amount: lottery.ticket_price,
+        amount: 1,
     })?;
 
     Ticket{
