@@ -35,6 +35,14 @@ export const CreateLotteryStoreView = () => {
   const [nftname, setNFTName] = useState('');
   const [nftsymbol, setNFTSymbol] = useState('');
 
+  React.useEffect(() => {
+    let storeid = localStorage.getItem('storeid');
+    setStoreID(storeid ? storeid : '');
+
+    let lotteryid = localStorage.getItem('lotteryid');
+    setLotteryId(lotteryid ? lotteryid : '');
+  });
+
   async function createStore() {
     let storeid = '';
     const storeProgramId = programIds().store;
@@ -52,6 +60,9 @@ export const CreateLotteryStoreView = () => {
           console.log(account);
           console.log("store id", storeid);
           setStoreID(storeid);
+          localStorage.setItem("storeid", storeid);
+          setLotteryId('');
+          localStorage.setItem("lotteryid", '');
           alert("successfully created store");
         }
         catch (err: any) {

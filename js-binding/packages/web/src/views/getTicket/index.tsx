@@ -30,6 +30,11 @@ export const GetTicketView = () => {
   const [ticketPrice, setTicketPrice] = useState(0);
   const [boughtTicketAmount, setBoughtTicketAmount] = useState(0);
   const [lotteryData, setLotteryData] = useState({} as LotteryData);
+
+  React.useEffect(() => {
+    let lotteryid = localStorage.getItem('lotteryid');
+    setLotteryID(lotteryid ? lotteryid : '');
+  });
   
   function getLotteryStatus(state:string){
     return state === "0"?"Created":state === "1"?"Started":"Ended";
@@ -114,6 +119,9 @@ export const GetTicketView = () => {
   return (
     <>
       <div>
+        <div style={{marginBottom: 30 + 'px'}}>Lottery ID
+          <Input value={lotteryID} defaultValue={lotteryID} onChange={e=> setLotteryID(e.target.value)} />
+        </div>
         <Form
           className='get-ticket'
           form={form} 
@@ -128,19 +136,6 @@ export const GetTicketView = () => {
             remember: true,
           }}
           autoComplete="off">
-          
-          <Form.Item
-            label="Lottery ID"
-            name="lotteryid"
-            rules={[
-              {
-                required: false,
-                message: 'Please input lottery id!',
-              },
-            ]}
-          >
-            <Input value={lotteryID} defaultValue={lotteryID} onChange={e=> setLotteryID(e.target.value)} />
-          </Form.Item>
           <Form.Item
             wrapperCol={{
               offset: 8,

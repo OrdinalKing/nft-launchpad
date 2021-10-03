@@ -32,6 +32,11 @@ export const ClaimView = () => {
   const [lotteryData, setLotteryData] = useState({} as LotteryData);
   const [tickets, setTickets] = useState([] as any[]);
 
+  React.useEffect(() => {
+    let lotteryid = localStorage.getItem('lotteryid');
+    setLotteryID(lotteryid ? lotteryid : '');
+  });
+
   async function load() {
     loadLotteryData();
     loadTickets();
@@ -169,6 +174,9 @@ export const ClaimView = () => {
   return (
     <>
       <div>
+        <div style={{marginBottom: 30 + 'px'}}>Lottery ID
+          <Input value={lotteryID} defaultValue={lotteryID} onChange={e=> setLotteryID(e.target.value)} />
+        </div>
         <Form
           className='claim'
           form={form} 
@@ -184,18 +192,6 @@ export const ClaimView = () => {
           }}
           autoComplete="off">
           
-          <Form.Item
-            label="Lottery ID"
-            name="lotteryid"
-            rules={[
-              {
-                required: false,
-                message: 'Please input lottery id!',
-              },
-            ]}
-          >
-            <Input value={lotteryID} defaultValue={lotteryID} onChange={e=> setLotteryID(e.target.value)} />
-          </Form.Item>
           <Form.Item
             wrapperCol={{
               offset: 8,

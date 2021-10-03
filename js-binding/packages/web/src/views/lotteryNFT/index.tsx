@@ -29,7 +29,7 @@ export const CreateLotteryNFTView = () => {
   const wallet = useWallet();
   const mint = useMint(QUOTE_MINT);
   const { width } = useWindowDimensions();
-  const [storeID, setStoreID] = useState('2Pgj2xq6G1oNcziFdHbt88hbmWaW1GQPdhcXPkNzZk42');
+  const [storeID, setStoreID] = useState('');
   const [createdLottery, setCreatedLottery] = useState('');
   const [mintAddress, setMintAddress] = useState(QUOTE_MINT.toBase58());
   const [enddate, setEndDate] = useState(moment().unix()+2 * 3600);
@@ -37,8 +37,16 @@ export const CreateLotteryNFTView = () => {
   const [ticketAmount, setTicketAmount] = useState(5);
   const [nftAmount, setNftAmount] = useState(3);
 
+  React.useEffect(() => {
+    let storeid = localStorage.getItem('storeid');
+    setStoreID(storeid ? storeid : '');
+
+    let lotteryid = localStorage.getItem('lotteryid');
+    setCreatedLottery(lotteryid ? lotteryid : '');
+  });
 
   async function createNFT() {
+    debugger;
     if (enddate == 0 || ticketPrice == 0 || ticketAmount == 0) {
       return;
     }
@@ -63,6 +71,7 @@ export const CreateLotteryNFTView = () => {
           console.log("lottery id",lotteryId);
           await loadAccount(connection,toPublicKey(lotteryId),toPublicKey(programIds().lottery));
           setCreatedLottery(lotteryId);
+          localStorage.setItem('lotteryid', lotteryId);
         }
         catch(err:any){
           console.log(err);
@@ -90,115 +99,31 @@ export const CreateLotteryNFTView = () => {
   return (
     <>
       <div>
-        <Form
-          className='create-lottery-nft'
-          form={form} 
-          name="basic"
-          labelCol={{
-            span: 8,
-          }}
-          wrapperCol={{
-            span: 16,
-          }}
-          initialValues={{
-            remember: true,
-          }}
-          autoComplete="off">
-          
-          <Form.Item
-            label="Store ID"
-            name="storeid"
-            rules={[
-              {
-                required: false,
-                message: 'Please input store id!',
-              },
-            ]}
-          >
+          <div>Store ID: 
             <Input value={storeID} defaultValue={storeID} onChange={e=> setStoreID(e.target.value)} />
-          </Form.Item>
-
-          <Form.Item
-            label="Token Mint Address"
-            name="tokenmintaddress"
-            rules={[
-              {
-                required: false,
-                message: 'Please input Token Mint Address!',
-              },
-            ]}
-          >
+          </div>
+          <div>Token Mint Address: 
             <Input value={mintAddress} defaultValue={mintAddress} onChange={e=> setMintAddress(e.target.value)} />
-          </Form.Item>
+          </div>
 
-          <Form.Item
-            label="End Date"
-            name="enddate"
-            rules={[
-              {
-                required: false,
-                message: 'Please input End Date!',
-              },
-            ]}
-          >
+          <div>End Date: 
             <Input type="number" value={enddate} defaultValue={enddate} onChange={e=> setEndDate(parseInt(e.target.value))} />
-          </Form.Item>
+          </div>
 
-          <Form.Item
-            label="Ticket Price"
-            name="ticketprice"
-            rules={[
-              {
-                required: false,
-                message: 'Please input Ticket Price!',
-              },
-            ]}
-          >
+          <div>Ticket Price:
             <Input type="number" value={ticketPrice} defaultValue={ticketPrice} onChange={e=> setTicketPrice(parseInt(e.target.value))} />
-          </Form.Item>
-          <Form.Item
-            label="Ticket Amount"
-            name="tokenamount"
-            rules={[
-              {
-                required: false,
-                message: 'Please input Token Amount!',
-              },
-            ]}
-          >
+          </div>
+
+          <div>Ticket Amount:
             <Input type="number" value={ticketAmount} defaultValue={ticketAmount} onChange={e=> setTicketAmount(parseInt(e.target.value))} />
-          </Form.Item>
-          <Form.Item
-            label="NFT Amount"
-            name="nftamount"
-            rules={[
-              {
-                required: false,
-                message: 'Please input NFT Amount!',
-              },
-            ]}
-          >
+          </div>
+
+          <div>NFT Amount
             <Input type="number" value={nftAmount} defaultValue={nftAmount} onChange={e=> setNftAmount(parseInt(e.target.value))} />
-          </Form.Item>
-          <Form.Item
-            wrapperCol={{
-              offset: 8,
-              span: 16,
-            }}
-          >
-            <Button htmlType="submit" onClick={e => createNFT()}>
-              Create Lottery NFT
-            </Button>
-            { createdLottery != '' ? 
-            <div >
-              <br/><br/>
-                created lottery account address: {createdLottery}
-            </div> : ''
-            }
-          </Form.Item>
-          
-        </Form>
-        
+          </div>
+          <Button htmlType="submit" style={{marginTop: 30 + 'px'}} onClick={e => createNFT()}>
+            Create Lottery NFT
+          </Button>
       </div>
     </>
   );
