@@ -9,13 +9,12 @@ import {
   ArtworksView,
   AuctionCreateView,
   AuctionView,
-  HomeView,
   JoinRaffleView,
 } from './views';
 import { AdminView } from './views/admin';
 import { BillingView } from './views/auction/billing';
-import { CreateLotteryStoreView } from './views/lotteryStore';
 import { StoreListView } from './views/storeList';
+import { MintNFTStoreView } from './views/mintNFTStore';
 import { CreateLotteryNFTView } from './views/lotteryNFT';
 import { GetTicketView } from './views/getTicket';
 import { ClaimView } from './views/claim';
@@ -28,8 +27,8 @@ export function Routes() {
           <Switch> 
             <Route exact path="/admin" component={() => <AdminView />} />
             <Route exact path="/join-raffle" component={() => <JoinRaffleView />} />
+            <Route exact path="/store-detail/:id/" component={() => <MintNFTStoreView />} />
             <Route exact path="/store-list" component={() => <StoreListView />} />
-            <Route exact path="/create-lottery-store" component={() => <CreateLotteryStoreView />} />
             <Route exact path="/create-lottery" component={() => <CreateLotteryNFTView />} />
             <Route exact path="/get-ticket" component={() => <GetTicketView />} />
             <Route exact path="/claim" component={() => <ClaimView />} />
