@@ -20,7 +20,7 @@ export const StoreListView = () => {
   const connection = useConnection();
   const wallet = useWallet();
 
-  const [stores, setStores] = useState([]);
+  const [stores, setStores] = useState<{publicKey: PublicKey; accountInfo: AccountInfo<Buffer>;}[]>([]);
 
   React.useEffect(() => {
     

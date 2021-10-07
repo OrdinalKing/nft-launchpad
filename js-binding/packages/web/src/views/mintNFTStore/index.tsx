@@ -32,7 +32,7 @@ export const MintNFTStoreView = () => {
   const [nfturi, setNFTUri] = useState('');
   const [nftname, setNFTName] = useState('');
   const [nftsymbol, setNFTSymbol] = useState('');
-  const [mintAddresses, setMintAddresses] = useState([]);
+  const [mintAddresses, setMintAddresses] = useState<{publicKey: PublicKey; accountInfo: AccountInfo<Buffer>;}[]>([]);
 
   const { id } = useParams<{id:string}>();
 
