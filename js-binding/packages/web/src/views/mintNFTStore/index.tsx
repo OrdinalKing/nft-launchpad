@@ -34,7 +34,7 @@ export const MintNFTStoreView = () => {
   const [nftsymbol, setNFTSymbol] = useState('');
   const [mintAddresses, setMintAddresses] = useState([]);
 
-  const { id } = useParams();
+  const { id } = useParams<{id:string}>();
 
   React.useEffect(() => {
     setStoreID(id);
