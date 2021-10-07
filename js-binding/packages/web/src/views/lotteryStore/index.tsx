@@ -17,8 +17,9 @@ import {
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
 import { makeStore, mintNFTStore } from '../../actions';
+import { getFilteredProgramAccounts } from '@solana/spl-name-service';
 
 export const CreateLotteryStoreView = () => {
   const [form] = Form.useForm();
@@ -35,12 +36,38 @@ export const CreateLotteryStoreView = () => {
   const [nftname, setNFTName] = useState('');
   const [nftsymbol, setNFTSymbol] = useState('');
 
+  const [stores, setStores] = useState([]);
+
   React.useEffect(() => {
     let storeid = localStorage.getItem('storeid');
     setStoreID(storeid ? storeid : '');
 
     let lotteryid = localStorage.getItem('lotteryid');
     setLotteryId(lotteryid ? lotteryid : '');
+
+    const filters = [
+      // {
+      //   dataSize: 80
+      // },
+      {
+        memcmp: {
+          offset: 0,
+          bytes: wallet.publicKey?.toBase58()
+        }
+      },
+      
+    ];
+
+    if (stores.length == 0) {
+      getFilteredProgramAccounts(connection, toPublicKey(programIds().store), filters)
+      .then((storeAccounts:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[])=>{
+        console.log(storeAccounts[0].publicKey.toBase58());
+        setStores(storeAccounts);
+      })
+      .catch((error:any)=>{
+        console.log(error);
+      });
+    }
   });
 
   async function createStore() {
@@ -234,6 +261,11 @@ export const CreateLotteryStoreView = () => {
             {mintAddress == '' ? '' :
               <div className='mint-address'>Mint Address: {mintAddress}</div>}
           </div>}
+
+          { stores.map(store => 
+            <div>
+              {store.publicKey.toBase58()}
+              </div>)}
       </div>
     </>
   );

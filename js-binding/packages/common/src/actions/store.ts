@@ -14,6 +14,7 @@ import { StringPublicKey, toPublicKey } from '../utils';
 export const STORE_PREFIX = 'store';
 
 export class StoreData {
+  owner: StringPublicKey;
   /// Pubkey of the authority with permission to modify this store.
   authority: StringPublicKey;
   /// Token mint for the SPL token being used to bid
@@ -22,10 +23,12 @@ export class StoreData {
   bump: number;
 
   constructor(args: {
+    owner: StringPublicKey;
     authority: StringPublicKey;
     nftAmount: BN;
     bump: number;
   }) {
+    this.owner = args.owner;
     this.authority = args.authority;
     this.nftAmount = args.nftAmount;
     this.bump = args.bump;
@@ -124,6 +127,7 @@ export const STORE_SCHEMA = new Map<any, any>([
     {
       kind: 'struct',
       fields: [
+        ['owner', 'pubkeyAsString'],
         ['authority', 'pubkeyAsString'],
         ['nftAmount', 'u64'],
         ['bump', 'u8'],

@@ -28,6 +28,7 @@ pub fn process_instruction(
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq, Debug)]
 pub struct StoreData {
+    pub owner: Pubkey,
     /// Pubkey of the authority with permission to modify this store.
     pub authority: Pubkey,
     /// current nft amount

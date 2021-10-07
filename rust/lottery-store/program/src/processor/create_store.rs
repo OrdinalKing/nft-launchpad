@@ -77,6 +77,7 @@ pub fn create_store(
 
         // Configure Store.
         StoreData {
+            owner: *accounts.payer.key,
             authority: *accounts.authority.key,
             nft_amount: 0,
             bump: args.bump,
