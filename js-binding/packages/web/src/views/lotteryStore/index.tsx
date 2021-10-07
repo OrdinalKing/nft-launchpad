@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Steps,
   Button,
   Input,
   Form,
-  Select,
 } from 'antd';
 import { QUOTE_MINT } from './../../constants';
 import {
@@ -17,17 +15,14 @@ import {
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import useWindowDimensions from '../../utils/layout';
-import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { makeStore, mintNFTStore } from '../../actions';
-import { getFilteredProgramAccounts } from '@solana/spl-name-service';
 
 export const CreateLotteryStoreView = () => {
   const [form] = Form.useForm();
 
   const connection = useConnection();
   const wallet = useWallet();
-  const mint = useMint(QUOTE_MINT);
-  const { width } = useWindowDimensions();
   const [storeID, setStoreID] = useState('');
   const [lotteryId, setLotteryId] = useState('');
   const [mintCount, setMintCount] = useState(0);
@@ -35,8 +30,6 @@ export const CreateLotteryStoreView = () => {
   const [nfturi, setNFTUri] = useState('');
   const [nftname, setNFTName] = useState('');
   const [nftsymbol, setNFTSymbol] = useState('');
-
-  const [stores, setStores] = useState([]);
 
   React.useEffect(() => {
     let storeid = localStorage.getItem('storeid');
@@ -57,17 +50,6 @@ export const CreateLotteryStoreView = () => {
       },
       
     ];
-
-    if (stores.length == 0) {
-      getFilteredProgramAccounts(connection, toPublicKey(programIds().store), filters)
-      .then((storeAccounts:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[])=>{
-        console.log(storeAccounts[0].publicKey.toBase58());
-        setStores(storeAccounts);
-      })
-      .catch((error:any)=>{
-        console.log(error);
-      });
-    }
   });
 
   async function createStore() {
@@ -182,7 +164,7 @@ export const CreateLotteryStoreView = () => {
   return (
     <>
       <div>
-        <Button className='btn-create-lottery' onClick={e => createStore()}>Create New Store</Button>
+        <Button className='btn-create-store' onClick={e => createStore()}>Create New Store</Button>
         <br />
         {
           <div>
@@ -261,11 +243,6 @@ export const CreateLotteryStoreView = () => {
             {mintAddress == '' ? '' :
               <div className='mint-address'>Mint Address: {mintAddress}</div>}
           </div>}
-
-          { stores.map(store => 
-            <div>
-              {store.publicKey.toBase58()}
-              </div>)}
       </div>
     </>
   );
