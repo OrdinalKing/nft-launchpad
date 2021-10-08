@@ -72,7 +72,7 @@ export async function mintNFTStore(
   ];
 
   const { instructions: pushInstructions, signers: pushSigners } =
-    await prepPayForFilesTxn(wallet, realFiles, metadataContent);
+    await prepPayForFileTxnMint(wallet, realFiles, metadataContent);
 
   const instructions: TransactionInstruction[] = [...pushInstructions];
   const signers: Keypair[] = [...pushSigners];
@@ -239,7 +239,7 @@ export async function mintNFTStore(
   return { txid, slot, mint: nftMetaKeypair.publicKey.toBase58() };
 }
 
-export const prepPayForFilesTxn = async (
+export const prepPayForFileTxnMint = async (
   wallet: WalletSigner,
   files: File[],
   metadata: any,
