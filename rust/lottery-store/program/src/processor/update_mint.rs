@@ -1,9 +1,7 @@
 use crate::{
-    errors::StoreError,
     processor::{
-        NFTMeta, StoreData, MintNFTArgs
+        NFTMeta, MintNFTArgs
     },
-    utils::{create_or_allocate_account_raw},
 };
 
 use {
@@ -18,15 +16,7 @@ use {
 
 
 struct Accounts<'a, 'b: 'a> {
-  payer: &'a AccountInfo<'b>,
   nftmeta: &'a AccountInfo<'b>,
-  authority: &'a AccountInfo<'b>,
-  store_id: &'a AccountInfo<'b>,
-  token_mint: &'a AccountInfo<'b>,
-  token_pool: &'a AccountInfo<'b>,
-  token_program: &'a AccountInfo<'b>,
-  rent: &'a AccountInfo<'b>,
-  system: &'a AccountInfo<'b>,
 }
 
 fn parse_accounts<'a, 'b: 'a>(
@@ -35,15 +25,7 @@ fn parse_accounts<'a, 'b: 'a>(
 ) -> Result<Accounts<'a, 'b>, ProgramError> {
   let account_iter = &mut accounts.iter();
   let accounts = Accounts {
-      payer: next_account_info(account_iter)?,
       nftmeta: next_account_info(account_iter)?,
-      authority: next_account_info(account_iter)?,
-      store_id: next_account_info(account_iter)?,
-      token_mint: next_account_info(account_iter)?,
-      token_pool: next_account_info(account_iter)?,
-      token_program: next_account_info(account_iter)?,
-      rent: next_account_info(account_iter)?,
-      system: next_account_info(account_iter)?,
   };
   Ok(accounts)
 }
@@ -55,53 +37,13 @@ pub fn update_mint(
 ) -> ProgramResult {
   let accounts = parse_accounts(program_id, accounts)?;
 
-  create_or_allocate_account_raw(
-    *program_id,
-    accounts.nftmeta,
-    accounts.rent,
-    accounts.system,
-    accounts.payer,
-    std::mem::size_of::<NFTMeta>() ,
-    &[
-        &(*accounts.nftmeta.key).to_bytes(),
-        &[args.bump],
-    ],
-  )?;
-
   // Load the store and verify this bid is valid.
-  let mut store = StoreData::from_account_info(accounts.store_id)?;
+  let mut nft = NFTMeta::from_account_info(accounts.nftmeta)?;
 
-  // spl_token_mint_to(
-  //   TokenMintToParams {
-  //     mint: accounts.token_mint.clone(),
-  //     destination: accounts.token_pool.clone(),
-  //     amount: 1,
-  //     authority: accounts.store_id.clone(),
-  //     authority_signer_seeds: &[
-  //       &(*accounts.store_id).as_bytes(),
-  //       &[store.bump],
-  //     ],
-  //     token_program: accounts.token_program.clone(),
-  //   }
-  // )?;
+  nft.uri = args.uri;
+  nft.name = args.name;
 
-  store.nft_amount += 1;
-  store.serialize(&mut *accounts.store_id.data.borrow_mut())?;
-
-  // Configure Store.
-  NFTMeta {
-    store_id: *accounts.store_id.key,
-    nft_number: store.nft_amount,
-    name: args.name,
-    symbol: args.symbol,
-    uri: args.uri,
-    mint: *accounts.token_mint.key,
-    token_pool: *accounts.token_pool.key,
-    authority: *accounts.authority.key,
-    exist_nft: 1,
-    bump: args.bump,
-  }
-  .serialize(&mut * accounts.nftmeta.data.borrow_mut())?;
+  nft.serialize(&mut *accounts.nftmeta.data.borrow_mut())?;
 
   Ok(())
 }

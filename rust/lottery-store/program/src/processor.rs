@@ -82,3 +82,11 @@ impl StoreData {
         Ok(store)
     }
 }
+
+
+impl NFTMeta {
+    pub fn from_account_info(a: &AccountInfo) -> Result<NFTMeta, ProgramError> {
+        let nftmeta: NFTMeta = try_from_slice_unchecked(&a.data.borrow_mut())?;
+        Ok(nftmeta)
+    }
+}

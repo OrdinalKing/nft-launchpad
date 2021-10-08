@@ -305,3 +305,29 @@ export async function mintNFT(
     }),
   );
 }
+
+export async function updateMint(
+  settings: MintNFTArgs,
+  nftmeta: StringPublicKey,
+  instructions: TransactionInstruction[],
+) {
+  const storeProgramId = programIds().store;
+
+  const data = Buffer.from(serialize(MINT_NFT_SCHEMA, settings));
+
+  const keys = [
+    {
+      pubkey: toPublicKey(nftmeta),
+      isSigner: true,
+      isWritable: true,
+    },
+  ];
+
+  instructions.push(
+    new TransactionInstruction({
+      keys,
+      programId: toPublicKey(storeProgramId),
+      data: data,
+    }),
+  );
+}
