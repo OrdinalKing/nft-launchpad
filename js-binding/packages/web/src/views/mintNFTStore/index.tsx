@@ -19,7 +19,7 @@ import { mintNFTStore } from '../../actions';
 import { getFilteredProgramAccounts } from '@solana/spl-name-service';
 import { useParams } from 'react-router';
 
-let init = true;
+let init = 0;
 
 export const MintNFTStoreView = () => {
   const [form] = Form.useForm();
@@ -42,9 +42,9 @@ export const MintNFTStoreView = () => {
     let lotteryid = localStorage.getItem('lotteryid');
     setLotteryId(lotteryid ? lotteryid : '');
 
-    if (mintAddresses.length == 0) {
+    if (mintAddresses.length == 0 && init < 3) {
       loadMints();
-      init = false;
+      init++;
     }
   });
 

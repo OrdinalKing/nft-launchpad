@@ -48,7 +48,7 @@ fn parse_accounts<'a, 'b: 'a>(
   Ok(accounts)
 }
 
-pub fn mint_nft(
+pub fn update_mint(
   program_id: &Pubkey,
   accounts: &[AccountInfo],
   args: MintNFTArgs,

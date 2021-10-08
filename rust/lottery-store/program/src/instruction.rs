@@ -3,7 +3,7 @@ use {
 };
 
 pub use crate::processor::{
-    mint_nft::MintNFTArgs,
+    MintNFTArgs,
     create_store::CreateStoreArgs,
 };
 
@@ -22,5 +22,7 @@ pub enum StoreInstruction {
     ///   2. `[]` Rent sysvar
     ///   3. `[]` System account
     MintNFT(MintNFTArgs),
+
+    UpdateMint(MintNFTArgs),
 }
 

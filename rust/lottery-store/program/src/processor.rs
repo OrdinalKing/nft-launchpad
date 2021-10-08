@@ -7,10 +7,12 @@ use solana_program::{
 // Declare submodules, each contains a single handler for each instruction variant in the program.
 pub mod create_store;
 pub mod mint_nft;
+pub mod update_mint;
 
 // Re-export submodules handlers + associated types for other programs to consume.
 pub use create_store::*;
 pub use mint_nft::*;
+pub use update_mint::*;
 
 pub fn process_instruction(
     program_id: &Pubkey,
@@ -20,7 +22,8 @@ pub fn process_instruction(
     use crate::instruction::StoreInstruction;
     match StoreInstruction::try_from_slice(input)? {
         StoreInstruction::CreateStore(args) => create_store(program_id, accounts, args),
-        StoreInstruction::MintNFT(args) => mint_nft(program_id, accounts, args)
+        StoreInstruction::MintNFT(args) => mint_nft(program_id, accounts, args),
+        StoreInstruction::UpdateMint(args) => update_mint(program_id, accounts, args)
     }
 }
 
@@ -57,6 +60,20 @@ pub struct NFTMeta {
     /// flag of current nft is sold or not
     pub exist_nft: u8,
     pub bump: u8,
+}
+
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, PartialEq)]
+pub struct MintNFTArgs {
+  /// The name of the asset
+  pub name: String,
+  /// The symbol for the asset
+  pub symbol: String,
+  /// URI pointing to JSON representing the asset
+  pub uri: String,
+  /// Pubkey for mint address
+  pub bump: u8,
 }
 
 impl StoreData {
