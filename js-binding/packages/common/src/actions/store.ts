@@ -91,7 +91,7 @@ export class CreateStoreArgs {
 }
 
 export class MintNFTArgs {
-  instruction: number = 1;
+  instruction: number;
   name: string;
   symbol: string;
   uri: string;
@@ -99,11 +99,13 @@ export class MintNFTArgs {
   /// End time is the cut-off point that the store is forced to end by. See StoreData.
 
   constructor(args: {
+    instruction: number;
     name: string;
     symbol: string;
     uri: string;
     bump: number;
   }) {
+    this.instruction = args.instruction;
     this.name = args.name;
     this.symbol = args.symbol;
     this.uri = args.uri;

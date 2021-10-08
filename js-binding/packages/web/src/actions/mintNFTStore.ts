@@ -63,6 +63,7 @@ export async function mintNFTStore(
   const metadataContent = {
     name: mintNFTSetting.name,
     symbol: mintNFTSetting.symbol,
+    image: files[0].name,
   };
 
   const realFiles: File[] = [
@@ -215,6 +216,7 @@ export async function mintNFTStore(
 
     await updateMint(
       new MintNFTArgs({
+        instruction: 2,
         name: mintNFTSetting.name,
         symbol: mintNFTSetting.symbol,
         uri: arweaveLink,

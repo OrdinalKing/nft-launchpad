@@ -61,6 +61,10 @@ pub struct NFTMeta {
     pub exist_nft: u8,
     pub bump: u8,
 }
+pub const MAX_NAME_LENGTH: usize = 32;
+pub const MAX_SYMBOL_LENGTH: usize = 10;
+pub const MAX_URI_LENGTH: usize = 200;
+pub const MAX_NFTMETA_LEN: usize = 32 + 8 + 4 + MAX_NAME_LENGTH + 4 + MAX_SYMBOL_LENGTH + 4 + MAX_URI_LENGTH + 32 + 32 + 32 + 1 + 1;
 
 
 #[repr(C)]

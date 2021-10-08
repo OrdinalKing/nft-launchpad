@@ -16,7 +16,8 @@ import {
   decodeStoreData,
   useConnectionConfig,
   decodeMetadata,
-  decodeNFTMetaData
+  decodeNFTMetaData,
+  NFTMeta
 } from '@oyster/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Connection, AccountInfo, PublicKey } from '@solana/web3.js';
@@ -26,6 +27,7 @@ import { useParams } from 'react-router';
 const { Dragger } = Upload;
 
 let init = 0;
+let mintsTemp : {key: PublicKey; nft: NFTMeta, image: string}[] = [];
 
 export const MintNFTStoreView = () => {
   const [form] = Form.useForm();
@@ -41,12 +43,14 @@ export const MintNFTStoreView = () => {
   const [nftsymbol, setNFTSymbol] = useState('');
   const [mintAddresses, setMintAddresses] = useState<{publicKey: PublicKey; accountInfo: AccountInfo<Buffer>;}[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [nftMetas, setNFTMetas] = useState<{key: PublicKey; nft: NFTMeta, image: string}[]>([]);
+
   const [coverFile, setCoverFile] = useState<File | undefined>(
     files?.[0],
   );
   
   const { id } = useParams<{id:string}>();
-
+  
   React.useEffect(() => {
     setStoreID(id);
 
@@ -70,17 +74,47 @@ export const MintNFTStoreView = () => {
     ];
 
     getFilteredProgramAccounts(connection, toPublicKey(programIds().store), filters)
-      .then((mints:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[])=>{
-        console.log(mints);
-        mints.forEach(mint => {
-          console.log(decodeNFTMetaData(mint.accountInfo.data));
-        });
-        setMintAddresses(mints);
-        setMintCount(mints.length);
+      .then(async (mints:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[])=>{
+        mintsTemp = [];
+        await updateNFTMetaData(mints).then(function(data){
+          setNFTMetas(mintsTemp);
+          setMintAddresses(mints);
+          setMintCount(mintsTemp.length);
+        }) ;
       })
       .catch((error:any)=>{
         console.log(error);
       });
+  }
+
+  async function updateNFTMetaData(mints:{ publicKey: PublicKey; accountInfo: AccountInfo<Buffer>; }[]) {
+    mintsTemp = [];
+
+    mints.forEach(async mint => {
+      const nftmeta = decodeNFTMetaData(mint.accountInfo.data);
+      console.log(nftmeta);
+      if (nftmeta.uri.length > 0) {
+        const imgurl = await getImageFromArweave(nftmeta.uri);
+        mintsTemp.push({key: mint.publicKey, nft: nftmeta, image: imgurl});
+      }
+    });
+  }
+  
+  async function getImageFromArweave(url : string): Promise<string> {
+    try {
+      if (url == '')
+        return '';
+       
+      let response = await fetch(url);
+      let responseJson = await response.json();
+      if (responseJson.image)
+        return String(responseJson.image);
+      else
+        return "";
+     } catch(error) {
+    }
+
+    return "";
   }
 
   async function loadAccount(
@@ -106,7 +140,7 @@ export const MintNFTStoreView = () => {
 
     setFiles([coverFile].filter(f => f) as File[]);
 
-    if (nftname == '' || nftsymbol == '') {
+    if (nftname == '' || nftsymbol == '' || files.length == 0) {
       return;
     }
 
@@ -124,6 +158,7 @@ export const MintNFTStoreView = () => {
       storeID,
       lotteryId,
       new MintNFTArgs({
+        instruction: 1,
         name: nftname,
         symbol: nftsymbol,
         uri: nfturi,
@@ -136,10 +171,10 @@ export const MintNFTStoreView = () => {
         mintAdd = mint;
       }).catch((reason) => {
         console.log(reason)
+        alert("mint failed");
       }).finally(async () => {
         if (mintAdd != "") {
           try {
-            debugger;
             var account = await loadAccount(connection, toPublicKey(mintAdd), toPublicKey(storeProgramId));
             var decodedMint = decodeNFTMetaData(account);
             var storeaccount = await loadAccount(connection, toPublicKey(storeID), toPublicKey(storeProgramId));
@@ -172,18 +207,24 @@ export const MintNFTStoreView = () => {
             <div>Store ID: <Input value={storeID} onChange={e => setStoreID(e.target.value)} /></div>
             <div>Lottery ID: <Input onChange={e => setLotteryId(e.target.value)} /></div>
 
+            <Button onClick={e => loadMints()}>Reload Mints</Button>
+
             <div>Mint Count: {mintCount}</div>
             <br />
 
             <Row className="row">
               <Col flex="1 0 70%">
                 <div>
-                { mintAddresses.map(mint => 
+                { nftMetas.map(mint => 
+                
           <div className='store-item'>
             {/* <span>Store {mint.indexOf(mint) + 1}</span> */}
             {/* <div>Total NFTs: {decodeStoreData(mint.accountInfo.data).nftAmount.toNumber()} </div> */}
-            <div>Mint Address: {mint.publicKey.toBase58()}</div>
-            <div>{decodeNFTMetaData(mint.accountInfo.data).uri}</div>
+            <div>Address: {mint.key.toBase58()}</div>
+            <div>Uri: {mint.nft.uri}</div>
+            <span>Name: {mint.nft.name}</span>
+            <span>Symbol: {mint.nft.symbol}</span>
+            <div><img style={{width: 40 + '%'}} src={mint.image} /></div>
             {/* <Button className='btn-detail-store' href={'/#/store-detail/' + mint.publicKey.toBase58()}>Detail</Button> */}
             </div>)}
                 </div>
