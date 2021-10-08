@@ -26,6 +26,7 @@ export async function mintNFTStore(
   storeid: StringPublicKey,
   lotteryId: StringPublicKey,
   mintNFTSetting: MintNFTArgs,
+  files: File[],
 ): Promise<{
   txid: string;
   slot: number;
@@ -44,7 +45,7 @@ export async function mintNFTStore(
   // )[0];
   const instructions: TransactionInstruction[] = [];
   const signers: Keypair[] = [];
-
+  console.log(files);
   // Allocate memory for the account
   const mintRent = await connection.getMinimumBalanceForRentExemption(
     MintLayout.span,

@@ -42,7 +42,7 @@ export const MintNFTStoreView = () => {
     let lotteryid = localStorage.getItem('lotteryid');
     setLotteryId(lotteryid ? lotteryid : '');
 
-    if (mintAddresses.length == 0 && init) {
+    if (mintAddresses.length == 0) {
       loadMints();
       init = false;
     }
@@ -112,7 +112,8 @@ export const MintNFTStoreView = () => {
         symbol: nftsymbol,
         uri: nfturi,
         bump: nonce,
-      })).then(({ txid, slot, mint }) => {
+      }),
+      []).then(({ txid, slot, mint }) => {
         console.log(txid);
         mintAdd = mint;
       }).catch((reason) => {
@@ -146,7 +147,7 @@ export const MintNFTStoreView = () => {
         {
           <div>
             <div>Store ID: <Input value={storeID} onChange={e => setStoreID(e.target.value)} /></div>
-            <div>Lottery ID: <Input value={lotteryId} onChange={e => setLotteryId(e.target.value)} /></div>
+            <div>Lottery ID: <Input onChange={e => setLotteryId(e.target.value)} /></div>
 
             <div>Mint Count: {mintCount}</div>
             <br />
