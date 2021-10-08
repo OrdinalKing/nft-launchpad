@@ -67,7 +67,6 @@ export const decodeTicket = (buffer: Buffer) => {
 };
 
 export interface LotteryCountdownState {
-  days: number;
   hours: number;
   minutes: number;
   seconds: number;
@@ -97,40 +96,6 @@ export class LotteryData {
   /// existing ticket amount
   soldAmount: BN;
 
-  public timeToEnd(): LotteryCountdownState {
-    const now = moment().unix();
-    const ended = { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    const endAt = this.endedAt?.toNumber() || 0;
-
-    let delta = endAt - now;
-
-    if (!endAt || delta <= 0) return ended;
-
-    const days = Math.floor(delta / 86400);
-    delta -= days * 86400;
-
-    const hours = Math.floor(delta / 3600) % 24;
-    delta -= hours * 3600;
-
-    const minutes = Math.floor(delta / 60) % 60;
-    delta -= minutes * 60;
-
-    const seconds = Math.floor(delta % 60);
-
-    return { days, hours, minutes, seconds };
-  }
-
-  public ended() {
-    const now = moment().unix();
-    if (!this.endedAt) return false;
-
-    if (this.endedAt.toNumber() > now) return false;
-
-    if (this.endedAt.toNumber() < now) {
-      return true;
-    }
-  }
-
   constructor(args: {
     authority: StringPublicKey;
     tokenMint: StringPublicKey;
@@ -157,7 +122,36 @@ export class LotteryData {
     this.soldAmount = args.soldAmount;
   }
 }
+export const lotteryTimeToEnd = (endedAt: BN) => {
+  const now = moment().unix();
+  const ended = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  const endAt = endedAt?.toNumber() || 0;
 
+  let delta = endAt - now;
+
+  if (!endAt || delta <= 0) return ended;
+
+  const hours = Math.floor(delta / 3600) % 24;
+  delta -= hours * 3600;
+
+  const minutes = Math.floor(delta / 60) % 60;
+  delta -= minutes * 60;
+
+  const seconds = Math.floor(delta % 60);
+
+  return { hours, minutes, seconds } as LotteryCountdownState;
+};
+
+export const lotteryEnded = (endedAt: BN) => {
+  const now = moment().unix();
+  if (!endedAt) return false;
+
+  if (endedAt.toNumber() > now) return false;
+
+  if (endedAt.toNumber() < now) {
+    return true;
+  }
+};
 export class CreateLotteryArgs {
   instruction: number = 0;
   /// End time is the cut-off point that the lottery is forced to end by. See LotteryData.

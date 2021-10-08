@@ -37,17 +37,17 @@ export const ClaimView = () => {
     setLotteryID(lotteryid ? lotteryid : '');
   });
 
-  async function load() {
-    loadLotteryData();
-    loadTickets();
+  async function loadOfClaim() {
+    loadLotteryDataOfClaim();
+    loadTicketsOfClaim();
   }
-  async function loadLotteryData(){
+  async function loadLotteryDataOfClaim(){
     let lotteryBuffer = await loadAccount(connection,toPublicKey(lotteryID),toPublicKey(programIds().lottery));
     let lotteryData = decodeLotteryData(lotteryBuffer);
     setLotteryData(lotteryData);
   }
 
-  async function loadTickets() {
+  async function loadTicketsOfClaim() {
     console.log("loading tickets ...")
     const filters = [
       {
@@ -94,11 +94,11 @@ export const ClaimView = () => {
     )
     .then(({txid,slot})=>{
       console.log("claim txid - ",txid);
-      loadTickets();
+      loadTicketsOfClaim();
     })
     .catch((error)=>{
       console.log(error);
-      loadTickets();
+      loadTicketsOfClaim();
     })
   }
   async function claimNFTOne(ticketId:string, ticketNumber:number) {
@@ -145,11 +145,11 @@ export const ClaimView = () => {
     )
     .then(({txid,slot})=>{
       console.log("claim txid - ",txid);
-      loadTickets();
+      loadTicketsOfClaim();
     })
     .catch((error)=>{
       console.log(error);
-      loadTickets();
+      loadTicketsOfClaim();
     })
   }
   async function loadAccount(
@@ -198,7 +198,7 @@ export const ClaimView = () => {
               span: 16,
             }}
           >
-            <Button htmlType="submit" onClick={e => load()}>
+            <Button htmlType="submit" onClick={e => loadOfClaim()}>
               Load Tickets
             </Button>
             { 

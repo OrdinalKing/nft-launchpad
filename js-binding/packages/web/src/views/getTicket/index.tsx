@@ -98,7 +98,7 @@ export const GetTicketView = () => {
       console.log(error);
       loadLotteryData();
     })
-}
+  }
   async function loadAccount(
     connection: Connection,
     address: PublicKey,
