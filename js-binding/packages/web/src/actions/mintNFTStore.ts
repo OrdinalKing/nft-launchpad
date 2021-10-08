@@ -14,10 +14,25 @@ import {
   toPublicKey,
   MintNFTArgs,
   programIds,
+  ENV,
 } from '@oyster/common';
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base';
+import { AR_SOL_HOLDER_ID } from '../utils/ids';
+import { getAssetCostToStore } from '../utils/assets';
+import crypto from 'crypto';
 
-const { mintNFT } = actions;
+const { mintNFT, updateMint } = actions;
+
+interface IArweaveResult {
+  error?: string;
+  messages?: Array<{
+    filename: string;
+    status: 'success' | 'fail';
+    transactionId?: string;
+    error?: string;
+  }>;
+}
+const RESERVED_TXN_MANIFEST = 'manifest.json';
 
 // This command makes an Lottery
 export async function mintNFTStore(
@@ -27,6 +42,7 @@ export async function mintNFTStore(
   lotteryId: StringPublicKey,
   mintNFTSetting: MintNFTArgs,
   files: File[],
+  env: ENV,
 ): Promise<{
   txid: string;
   slot: number;
@@ -43,9 +59,23 @@ export async function mintNFTStore(
   //     toPublicKey(PROGRAM_IDS.store),
   //   )
   // )[0];
-  const instructions: TransactionInstruction[] = [];
-  const signers: Keypair[] = [];
-  console.log(files);
+
+  const metadataContent = {
+    name: mintNFTSetting.name,
+    symbol: mintNFTSetting.symbol,
+  };
+
+  const realFiles: File[] = [
+    ...files,
+    new File([JSON.stringify(metadataContent)], 'metadata.json'),
+  ];
+
+  const { instructions: pushInstructions, signers: pushSigners } =
+    await prepPayForFilesTxn(wallet, realFiles, metadataContent);
+
+  const instructions: TransactionInstruction[] = [...pushInstructions];
+  const signers: Keypair[] = [...pushSigners];
+
   // Allocate memory for the account
   const mintRent = await connection.getMinimumBalanceForRentExemption(
     MintLayout.span,
@@ -143,5 +173,108 @@ export async function mintNFTStore(
     'single',
   );
 
+  const data = new FormData();
+
+  const tags = realFiles.reduce(
+    (acc: Record<string, Array<{ name: string; value: string }>>, f) => {
+      acc[f.name] = [
+        { name: 'mint', value: nftMetaKeypair.publicKey.toBase58() },
+      ];
+      return acc;
+    },
+    {},
+  );
+  data.append('tags', JSON.stringify(tags));
+  data.append('transaction', txid);
+  realFiles.map(f => data.append('file[]', f));
+
+  // TODO: convert to absolute file name for image
+
+  const result: IArweaveResult = await (
+    await fetch(
+      // TODO: add CNAME
+      env.startsWith('mainnet-beta')
+        ? 'https://us-central1-principal-lane-200702.cloudfunctions.net/uploadFileProd2'
+        : 'https://us-central1-principal-lane-200702.cloudfunctions.net/uploadFile2',
+      {
+        method: 'POST',
+        body: data,
+      },
+    )
+  ).json();
+
+  const metadataFile = result.messages?.find(
+    m => m.filename === RESERVED_TXN_MANIFEST,
+  );
+  if (metadataFile?.transactionId && wallet.publicKey) {
+    const updateInstructions: TransactionInstruction[] = [];
+    const updateSigners: Keypair[] = [];
+
+    // TODO: connect to testnet arweave
+    const arweaveLink = `https://arweave.net/${metadataFile.transactionId}`;
+
+    await updateMint(
+      new MintNFTArgs({
+        name: mintNFTSetting.name,
+        symbol: mintNFTSetting.symbol,
+        uri: arweaveLink,
+        bump: mintNFTSetting.bump,
+      }),
+      wallet.publicKey.toBase58(),
+      nftMetaKeypair.publicKey.toBase58(),
+      updateInstructions,
+    );
+
+    // signers.push(nftMetaKeypair);
+
+    await sendTransactionWithRetry(
+      connection,
+      wallet,
+      updateInstructions,
+      updateSigners,
+    );
+  }
   return { txid, slot, mint: nftMetaKeypair.publicKey.toBase58() };
 }
+
+export const prepPayForFilesTxn = async (
+  wallet: WalletSigner,
+  files: File[],
+  metadata: any,
+): Promise<{
+  instructions: TransactionInstruction[];
+  signers: Keypair[];
+}> => {
+  console.log(metadata);
+  const memo = programIds().memo;
+
+  const instructions: TransactionInstruction[] = [];
+  const signers: Keypair[] = [];
+
+  if (wallet.publicKey)
+    instructions.push(
+      SystemProgram.transfer({
+        fromPubkey: wallet.publicKey,
+        toPubkey: AR_SOL_HOLDER_ID,
+        lamports: await getAssetCostToStore(files),
+      }),
+    );
+
+  for (let i = 0; i < files.length; i++) {
+    const hashSum = crypto.createHash('sha256');
+    hashSum.update(await files[i].text());
+    const hex = hashSum.digest('hex');
+    instructions.push(
+      new TransactionInstruction({
+        keys: [],
+        programId: memo,
+        data: Buffer.from(hex),
+      }),
+    );
+  }
+
+  return {
+    instructions,
+    signers,
+  };
+};

@@ -308,6 +308,7 @@ export async function mintNFT(
 
 export async function updateMint(
   settings: MintNFTArgs,
+  wallet: StringPublicKey,
   nftmeta: StringPublicKey,
   instructions: TransactionInstruction[],
 ) {
@@ -317,9 +318,24 @@ export async function updateMint(
 
   const keys = [
     {
-      pubkey: toPublicKey(nftmeta),
+      pubkey: toPublicKey(wallet),
       isSigner: true,
       isWritable: true,
+    },
+    {
+      pubkey: toPublicKey(nftmeta),
+      isSigner: false,
+      isWritable: true,
+    },
+    {
+      pubkey: SYSVAR_RENT_PUBKEY,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: SystemProgram.programId,
+      isSigner: false,
+      isWritable: false,
     },
   ];
 

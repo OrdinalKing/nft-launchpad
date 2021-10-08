@@ -16,7 +16,10 @@ use {
 
 
 struct Accounts<'a, 'b: 'a> {
+  payer: &'a AccountInfo<'b>,
   nftmeta: &'a AccountInfo<'b>,
+  rent: &'a AccountInfo<'b>,
+  system: &'a AccountInfo<'b>,
 }
 
 fn parse_accounts<'a, 'b: 'a>(
@@ -25,7 +28,10 @@ fn parse_accounts<'a, 'b: 'a>(
 ) -> Result<Accounts<'a, 'b>, ProgramError> {
   let account_iter = &mut accounts.iter();
   let accounts = Accounts {
+      payer: next_account_info(account_iter)?,
       nftmeta: next_account_info(account_iter)?,
+      rent: next_account_info(account_iter)?,
+      system: next_account_info(account_iter)?,
   };
   Ok(accounts)
 }
